@@ -1,2 +1,2 @@
 # guoxiaoyong.github.io
-Xiaoyong Tech Note
+Xiaoyong Guo's blog 
