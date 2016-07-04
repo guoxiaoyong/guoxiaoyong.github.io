@@ -38,7 +38,7 @@ std::pair<int, int> div(int m, int n) {
 
     return std::make_pair(m/n, m%n);
 }
-{% endhighligh %}
+{% endhighlight %}
 
 You'll get a compiling error complaining ambiguous function declaration.
 The tick is to let `div` return a class type, 
