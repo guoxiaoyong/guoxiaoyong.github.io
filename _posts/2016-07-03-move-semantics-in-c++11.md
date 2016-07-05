@@ -28,7 +28,7 @@ any mechanism to modify its metadata to indicate the change of
 the parent folder of a file.
 What you can do with this particular filesystem are 
 creating a file and removing a file, 
-then move operation can be done in two steps: first make a copy 
+then move operation can be done in two steps: first make a copy of 
 the original file in the destination folder, 
 then remove the original file in the source folder.
 This is obviously a bad design since it makes move operation 
