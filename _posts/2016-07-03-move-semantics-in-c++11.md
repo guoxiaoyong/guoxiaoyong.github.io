@@ -14,12 +14,12 @@ You may already have noticed that:
 copying a file from one folder to another folder takes quite a while 
 if the file is large, while moving the file from one folder to 
 another folder takes almost no time, 
-provide that the two folders are on the same partitioin. 
+provide that the two folders are on the same partition. 
 No matter how large the file is, move operation finishes immediately.
 This is because in order to copying a file, 
 you need to read the whole file, and then write it onto the harddisk.
 The larger the file is, the longer it takes.
-While to moving a file you only need to modify the metadata 
+While to move a file you only need to modify the metadata 
 of the filesystem to indicate that the parent folder of 
 the file is changed to another.
 
