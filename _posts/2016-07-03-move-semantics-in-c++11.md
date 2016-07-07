@@ -1,11 +1,12 @@
 ---
 layout: post
-title: "Move semantics in C++11"
+title: "Move Semantics in C++11: A Metaphoric Explanation"
 date: 2016-07-03 18:17:11 +0800
 categories: C++
 ---
 
 **Xiaoyong Guo**
+
 
 Move semantics in C++11 is introduced to reduce the overhead caused by
 object copying. The semantics of move and copy in C++11 is very much
