@@ -14,7 +14,7 @@ This post is about [Asian option pricing](https://en.wikipedia.org/wiki/Asian_op
 It is also my first experiment with writing LaTeX equations on a webpage using MathJax. 
 
 
-![asian option time line](/image/asian_option_timeline.svg)
+![asian option time line](/image/asian_option_timeline.png)
 
 Let's say that we already have a library routine 
 that calculates the price of an asian call option 
