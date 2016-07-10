@@ -258,13 +258,16 @@ typeinfo name for A:
     .section    .note.GNU-stack,"",@progbits
 {% endhighlight %}
 
-Keep in mind that `long` and `pointers` are 32-bit long 
-since I choose to generate 32-bit assembly code.
+
+Keep in mind that `long` and `pointer type` 
+are 32-bit long since I choose to 
+generate 32-bit assembly code.
+
 
 From line 67 to line 78, 
 we can see that `p1 = 1`, `p2 = 5` and `p3 = 9`.
 If I choose to generate 64-bit assembly code, you'll see
-that these three values are `1`, `9`, `17`.
+that these three values are `1`, `9` and `17`.
 So, it seems that the values stored in the 
 pointers to virtual functions are 
 **offsets of virutual functions in the vtable plus 1**. 
@@ -273,10 +276,11 @@ where the first 8 bytes seems to be ignored when assigning
 vtable address in the constructor of `A` in line 44.
 
 
-Line 87-90 corresponds the C++ code `a.fun(22)`. 
+Line 87-90 corresponds to the C++ code `a.fun(22)`. 
 In line 90 the function address of `A::fun(int)` is called directly,
 So we can conclude that there is no overhead incurred by 
 calling a virtual function using the form `Object.Function`.
+
 
 Line 92-99 corresponds to the C++ code `b->gun(23)`.  Line 92-95 
 are the steps to get the address of the virtual 
@@ -308,8 +312,8 @@ used as the function address to be called
 
 ## Conclusions
 
-1. pointer to virtual functions stores values of offset of the virtual function in vtable plus 1
-2. `Object.Function` no overhead even `Function` is virtual
-3. `PtrToObject->Function` small overhead
-4. `Object.*PtrToFunction` big overhead
+1. Pointer to a virtual function stores a value that equals to the offset of the virtual function in vtable plus 1.
+2. The calling form `Object.Function` incurs no overhead compared to calling a non-virtual function. 
+3. `PtrToObject->Function` incurs a relatively small overhead. 
+4. `Object.*PtrToFunction` incurs a relatively big overhead.
 
