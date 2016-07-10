@@ -2,7 +2,7 @@
 layout: post
 title: "A Note on Asian Option Pricing"
 date: 2016-07-09 13:17:01 +0800
-categories: C++
+categories: finacial mathematics 
 ---
 
 **Xiaoyong Guo**
