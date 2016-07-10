@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Pointer to Virtual Functions"
+title: "An Investigation On Pointers to Virtual Functions in C++"
 date: 2016-07-08 17:26:00 +0800
 categories: C++
 ---
@@ -16,8 +16,8 @@ In contrast,
 the value of a pointer to a regular function 
 or member function is something like `0x400606`.
 
-In order to develop a better understanding,
-I designed a very simple class as follows:
+In order to develop a better understanding of this phenomenon,
+I designed a very simple class `A` as follows:
 
 {% highlight c++ linenos %}
 struct A {
@@ -310,10 +310,30 @@ a regular member function pointer. The value of `p3` is
 used as the function address to be called 
 (line 105 and line 125).
 
+
+## Performance Test Results
+
+I did a simple performance benchmark.
+The three function calls `a.fun(22)`, `b->fun(22)` and `a::*p1(22)` 
+are iterated for `1e10` times.
+The results are shown in the following table.
+
+
+| Function Call | Time (seconds) |
+|--------------|--------|
+| `a.fun(22)`  | 84.475 |
+| `b->fun(22)` | 92.959 |
+| `a::*p1(22)` | 141.373 |
+
+
 ## Conclusions
 
 1. Pointer to a virtual function stores a value that equals to the offset of the virtual function in vtable plus 1.
 2. The calling form `Object.Function` incurs no overhead compared to calling a non-virtual function. 
-3. `PtrToObject->Function` incurs a relatively small overhead. 
-4. `Object.*PtrToFunction` incurs a relatively big overhead.
+3. The calling form `PtrToObject->Function` incurs a relatively small overhead. 
+4. The calling form `Object.*PtrToFunction` incurs a relatively big overhead.
+
+Remember that **item 3** and **item 4** are based on the assumption that the g++ optimization switch is off. 
+C++ compiler is able to optimize the generated assembly code to reduce this function calling overhead in many cases.
+
 
