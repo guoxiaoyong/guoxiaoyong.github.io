@@ -1,0 +1,27 @@
+#!/bin/sh
+
+
+
+today=$(date +%Y-%m-%d)
+now=$(date +'%Y-%m-%d %H:%M:%S')
+title=$(echo $@ | sed 's/ /-/')
+post_file_name=$today-$title
+echo $post_file_name.md
+
+frontmatter() {
+cat << EOF
+---
+layout: post
+title: "$@"
+date: $now +0800
+categories: C++
+---
+
+**Xiaoyong Guo**
+
+EOF
+}
+
+frontmatter > ${post_file_name}.md
+
+
