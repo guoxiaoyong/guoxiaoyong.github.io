@@ -4,7 +4,7 @@
 
 today=$(date +%Y-%m-%d)
 now=$(date +'%Y-%m-%d %H:%M:%S')
-title=$(echo $@ | sed 's/ /-/')
+title=$(echo $@ | sed 's/ /-/g')
 post_file_name=$today-$title
 echo $post_file_name.md
 
