@@ -8,17 +8,25 @@ categories: C++
 **Xiaoyong Guo**
 
 In C++11, an expression has a property called **value category**.
-There are 5 value categories defined: lvalue, xvalue, rvalue, glvalue, prvalue.
+There are 5 value categories defined: 
 
-
-1. **lvalue**: 
+1. **lvalue**: left value
 2. **xvalue**: expiring value
-3. **rvalue**:
+3. **rvalue**: right value
 4. **glvalue**: generalized lvalue
 5. **prvalue**: pure rvalue
 
+The following figure shows the taxonomy of the expression categorization.
+
+![value category taxonomy](/image/value_category.png)
+
 An expression belongs to one of the three fundamental categories: lvalue, xvalue or rvalue.
 
+xvalues are created by three kinds of expressions:
+
+1. function calls (explicit or implicit) that return rvalue references to objects;
+2. casts to rvalue references to objects;
+3.  class member access and pointer-to-data-member dereference expressions where the object expression is an xvalue.
 
 ## References
 
