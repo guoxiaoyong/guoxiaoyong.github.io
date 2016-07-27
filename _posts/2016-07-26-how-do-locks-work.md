@@ -82,7 +82,8 @@ struct SpinLock {
 
 #if 0
         /* except for atomicity
-           the following while code block has the same effect as __sync_bool_compare_and_swap */
+           the following while code block has the same effect 
+           as __sync_bool_compare_and_swap */
         while (true) {
 
             if (flag == unlock_flag) {
