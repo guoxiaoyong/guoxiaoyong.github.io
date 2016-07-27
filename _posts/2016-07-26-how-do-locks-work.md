@@ -134,6 +134,8 @@ struct SpinLock {
 };
 {% endhighlight %}
 
+Now we can use this `SpinLock` in our code to do synchronization.
+
 {% highlight c++ %}
 #include <stdio.h>
 #include <unistd.h>
@@ -188,3 +190,7 @@ int main(void) {
     return 0;
 }
 {% endhighlight %}
+
+## References
+1. [C11 Lock-free Stack](http://nullprogram.com/blog/2014/09/02/)
+2. [Compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap)
