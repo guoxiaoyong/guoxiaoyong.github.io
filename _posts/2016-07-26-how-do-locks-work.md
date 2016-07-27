@@ -100,7 +100,41 @@ struct SpinLock {
         flag = unlock_flag;
     }
 };
+{% endhighlight %}
 
+We can also implement `SpinLock` using `std::atomic<int>` class, as shown 
+in the following code:
+
+{% highlight c++ %}
+#include <atomic>
+
+struct SpinLock {
+
+    std::atomic<int> flag;
+
+    SpinLock(): flag(0) {
+    }
+
+    void lock() {
+
+        int unlock_flag = 0;
+        int lock_flag = 1;
+
+        do {
+
+            unlock_flag  = 0;
+
+        } while (!flag.compare_exchange_strong(unlock_flag, lock_flag));
+    }
+
+    void unlock() {
+
+        flag = 0;
+    }
+};
+{% endhighlight %}
+
+{% highlight c++ %}
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -153,5 +187,4 @@ int main(void) {
 
     return 0;
 }
-
 {% endhighlight %}
