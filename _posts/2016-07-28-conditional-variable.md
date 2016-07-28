@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Conditional Variable"
+title: "Build Your Own Conditional Variable"
 date: 2016-07-28 08:37:45 +0800
 categories: C++
 ---
@@ -69,7 +69,17 @@ public:
     }
 };
 
+{% endhighlight %}
 
+One problem for the above conditional variable class 
+is: when `signal` method is called to unblock a thread 
+waiting on the conditional variable, the last thread that
+called `wait` will be unblocked. 
+This may cause problems. Following is a example of using
+this conditional variable class. 
+
+
+{% highlight c++ %}
 #include <thread>
 #include <mutex>
 #include <queue>
