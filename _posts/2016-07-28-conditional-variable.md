@@ -42,7 +42,8 @@ public:
 class CondVariable {
 
 private:
-    int flag;
+    volatile int flag; // revised on 2016-07-29
+    // std::atomic<int> flag; // C++11 recommend using this form
 
 public:
     CondVariable():flag(0) {}
@@ -136,6 +137,7 @@ void producer() {
 void control() {
 
     quit = !!getchar();
+    spinlock.signal();
 }
 
 int main(void) {
