@@ -52,7 +52,7 @@ if you type the following command, you will get the message "Invalid Password!"
 
 Let's write a simple `strcmp` function:
 
-{% ighlight c %}
+{% highlight c %}
 #include <stdio.h>
 
 int strcmp(const char *s1, const char *s2) {
