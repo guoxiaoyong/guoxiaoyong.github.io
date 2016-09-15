@@ -7,15 +7,18 @@ categories: C++
 
 **Xiaoyong Guo**
 
-I just found an old wireless router 
-I flashed a openwrt I compiled for it more than a year ago. 
-So I decided to configure it to a WiFi repeater.
 
+I just found an old wireless router NetGear WNDR3700 from a storage box. 
+The router is flashed to an openwrt firmware I compiled for it about 20 months ago. 
+Since [use a laptop as a WiFi repeater]({% post_url 2016-09-12-wifi-repeater %}) is too heavy-handed.
+So I decided to replace my laptop WiFi repeater with this wireless router.
 
-## Step 1
-Make changes to `/etc/config/wireless`,
-you need an `AP` mode interface and
-a `station` mode interface. 
+This steps to configure a wireless router to a WiFi repeater are listed below.
+
+**Step 1**: Make changes to `/etc/config/wireless`,
+you need an `AP` mode interface and a `station` mode interface. 
+Following is my `/etc/config/wireless` configuration file.
+
 
 ```
 config wifi-device  radio0
@@ -42,9 +45,7 @@ config wifi-iface
         option key        'password'
 ```
 
-## Step 2
-
-Add one interface configuration in `/etc/config/network`
+**Step 2**: Add one interface configuration in `/etc/config/network`
 
 ```
 config interface 'wlan'
@@ -53,15 +54,13 @@ config interface 'wlan'
 ```
 
 This tells openwrt to use DHCP protocol to configure wlan0 interface.
-Note that the `AP` interface's name is `wlan0-1`, while the `Station` interface's name is `wlan0`.
+Note that the interface name `wlan` should be consistent with the name given in `/etc/config/wireless`.
+Using `iwconfig` and `ifconfig` tools you can see there are two wireless interfaces `wlan0` and `wlan0-1`,
+and the `Station` interface's name is `wlan0`, so `AP` interface's name is `wlan0-1`. 
 
-## Step 3
+**Step 3**: Remove all firewall rules in `/etc/config/firewall`.
 
-remove all firewall rules in `/etc/config/firewall`.
-
-## Step 4
-
-Add one line in `/etc/rc.local`
+**Step 4**: Add one line in `/etc/rc.local`
 
 ```
 iptables -t nat -A POSTROUTING -j MASQUERADE
