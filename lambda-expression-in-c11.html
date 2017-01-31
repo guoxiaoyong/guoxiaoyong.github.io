@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Lambda Expression in C++11</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Xiaoyong's Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/pages/welcome-to-xiaoyong-guos-homepage.html">Home</a></li>
+                    <li><a href="/index.html">Blog</a></li>
+                    <li><a href="/pages/projects.html">Projects</a></li>
+                    <li><a href="/pages/about_xiaoyong_guo.html">About</a></li>
+                </ul>
+                </nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/lambda-expression-in-c11.html" rel="bookmark"
+           title="Permalink to Lambda Expression in C++11">Lambda Expression in C++11</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <span>Sun 10 July 2016</span>
+
+</footer><!-- /.post-info -->      <p>C++11 provides native lambda expression support.
+The syntax of creating an anonymous function 
+using lambda expression is summarized in the following figure.</p>
+<p><img alt="C++ lambda" src="/images/cpp_lambda.svg"></p>
+<ol>
+<li>capture flags: <ol>
+<li><code>[&amp;]</code>: capture all external variables by reference </li>
+<li><code>[=]</code>: capture all external variables by value</li>
+<li><code>[]</code>: do not capture any external variable</li>
+<li><code>[a,&amp;b]</code>: capture external variable <code>a</code> by value, capture external variable <code>b</code> by reference.</li>
+<li><code>[=,&amp;b]</code>: capture external variable by value, except that capture external variable <code>b</code> by reference.</li>
+</ol>
+</li>
+<li>input parameters of the anonymous function, can be omited if there is no input parameter.</li>
+<li>mutable, if omited, the returned functor cannot alter valued of the input parameters or call non-const methods.</li>
+<li>exception, specify what exeption will be thrown, can be omited. </li>
+<li>type of the return value, can be omited if the type of the return value can be inferred.</li>
+<li>function body </li>
+</ol>
+<h2>Examples</h2>
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="k">auto</span> <span class="n">fun</span> <span class="o">=</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">fun</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span> <span class="c1">// print out 3</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
+
+    <span class="k">auto</span> <span class="n">fun</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="k">mutable</span> <span class="p">{</span>
+
+        <span class="kt">int</span> <span class="n">t</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">x</span><span class="o">+</span><span class="n">b</span><span class="o">*</span><span class="n">y</span><span class="p">;</span>
+
+        <span class="c1">// if mutable is not specified,</span>
+        <span class="c1">// there will be an compiling error</span>
+        <span class="c1">// since captured variable are treated as const,</span>
+        <span class="c1">// it is not allowed to change a&#39;s value</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span> 
+
+        <span class="n">b</span> <span class="o">=</span> <span class="mi">40</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="n">t</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">fun</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span> <span class="c1">// print out 3*1+4*2 = 11</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;a = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">a</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span> <span class="c1">// print out 3, a is pass by value</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;b = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">b</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span> <span class="c1">// print out 40, b is pass by reference</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">// define a lamda function that returns a lambda function</span>
+    <span class="k">auto</span> <span class="n">fun</span> <span class="o">=</span>  <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="k">auto</span> <span class="n">f</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">](</span><span class="kt">int</span> <span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="k">return</span> <span class="n">f</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">fun</span><span class="p">(</span><span class="mi">3</span><span class="p">)(</span><span class="mi">4</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span> <span class="c1">// print out 7</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kt">int</span> <span class="n">a</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
+
+    <span class="n">generate</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="p">[]()</span><span class="o">-&gt;</span><span class="kt">int</span> <span class="p">{</span> <span class="k">return</span> <span class="n">rand</span><span class="p">()</span> <span class="o">%</span> <span class="mi">100</span><span class="p">;</span> <span class="p">});</span>
+
+    <span class="n">for_each</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; &quot;</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+
+    <span class="n">sort</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">+</span><span class="mi">10</span><span class="p">);</span>
+    <span class="n">for_each</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; &quot;</span><span class="p">;</span>
+    <span class="p">});</span>
+    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">a</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+    <span class="n">iota</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">a</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="mi">0</span><span class="p">);</span>
+
+    <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
+
+    <span class="c1">// fun and gun are different types,</span>
+    <span class="c1">// use gdb ptype to see their types.</span>
+    <span class="k">auto</span> <span class="n">gun</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">](</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">n</span><span class="o">%</span><span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">};</span>
+    <span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">fun</span> <span class="o">=</span> <span class="n">gun</span><span class="p">;</span>
+
+    <span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">remove_if</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">a</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">fun</span><span class="p">)</span> <span class="p">;</span>
+    <span class="n">for_each</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">it</span><span class="p">,</span> <span class="p">[](</span><span class="k">decltype</span><span class="p">(</span><span class="o">*</span><span class="n">it</span><span class="p">)</span><span class="o">&amp;</span> <span class="n">n</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">n</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2>Referrences</h2>
+<ol>
+<li><a href="http://www.cprogramming.com/c++11/c++11-lambda-closures.html">Lambda Functions in C++11 - the Definitive Guide</a></li>
+</ol>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://52.193.207.59/blog/">Leon's Blog</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
+                            <li><a href="http://twitter.com">twitter</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+
+        <footer id="contentinfo" class="body">
+           <p>guoxiaoyong@guoxiaoyong.com</p>
+        </footer><!-- /#contentinfo -->
+
+  <div style="margin:auto;display:inline-block;width:400px;text-align:center"><script type="text/javascript" src="//rf.revolvermaps.com/0/0/7.js?i=5d2dt1ex4s6&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;sx=0" async="async"></script></div>
+
+
+</body>
+</html>
