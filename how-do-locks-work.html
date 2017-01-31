@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>How do Locks Work?</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Xiaoyong's Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/pages/welcome-to-xiaoyong-guos-homepage.html">Home</a></li>
+                    <li><a href="/index.html">Blog</a></li>
+                    <li><a href="/pages/projects.html">Projects</a></li>
+                    <li><a href="/pages/about_xiaoyong_guo.html">About</a></li>
+                </ul>
+                </nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/how-do-locks-work.html" rel="bookmark"
+           title="Permalink to How do Locks Work?">How do Locks Work?</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <span>Tue 26 July 2016</span>
+
+</footer><!-- /.post-info -->      <p>On x86/x86_64 platforms (&gt;= i486), 
+a CPU core can assert a LOCK signal so that only this core 
+can modify the content of a particular memory address.
+There are a few instructions that can be prefixed with <code>lock</code>.
+One such instructions is <code>cmpxchg</code>, which is usually used to implement locks
+such as mutex.</p>
+<p><code>cmpxchg</code> stands for <strong>compare and exchange</strong>. 
+It has two operands, the first operand can be a register or memory address,
+the second operand is register. What <code>cmpxchg</code> actually does is shown in the following code:</p>
+<div class="highlight"><pre><span></span><span class="c1">// cmpxchg r/m (v), r (b)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">eax</span> <span class="o">==</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">zf</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+    <span class="n">zf</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">eax</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>compare and exchange</strong> is more commonly called  <strong>compare and swap</strong> or <code>CAS</code> operation in some literatures.
+It is a very important technique to do synchronization between threads.
+The semantics of <strong>compare and exchange</strong> is: I think <code>V</code> should be <code>A</code>, if it is, 
+then set <code>V</code> to <code>B</code> and return true, otherwise, return false. If written in C, it should
+look like this:</p>
+<div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">compare_and_swap</span> <span class="p">(</span><span class="kt">int</span><span class="o">*</span> <span class="n">m</span><span class="p">,</span> <span class="kt">int</span> <span class="n">expected</span><span class="p">,</span> <span class="kt">int</span> <span class="n">val</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">m</span> <span class="o">==</span> <span class="n">expected</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="o">*</span><span class="n">m</span> <span class="o">=</span> <span class="n">val</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>In C++11, <code>atomic_compare_exchange_weak</code> and <code>atomic_compare_exchange_strong</code>
+does the same thing. Actually, they are wrappers of <code>lock cmpxchg</code> on x86/x86_64 platform.
+GCC provide <a href="https://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Atomic-Builtins.html">buildin functions for atomic memory access</a>.
+Two of them are related to <code>cmpxchg</code> instruction:</p>
+<div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="n">__sync_bool_compare_and_swap</span> <span class="p">(</span><span class="n">type</span> <span class="o">*</span><span class="n">ptr</span><span class="p">,</span> <span class="n">type</span> <span class="n">oldval</span> <span class="n">type</span> <span class="n">newval</span><span class="p">,</span> <span class="p">...)</span>
+<span class="n">type</span> <span class="n">__sync_val_compare_and_swap</span> <span class="p">(</span><span class="n">type</span> <span class="o">*</span><span class="n">ptr</span><span class="p">,</span> <span class="n">type</span> <span class="n">oldval</span> <span class="n">type</span> <span class="n">newval</span><span class="p">,</span> <span class="p">...)</span>
+</pre></div>
+
+
+<p>We can build our own lock using these functions. Following is an example.</p>
+<div class="highlight"><pre><span></span><span class="cm">/* a customer built spinlock, using __sync_bool_compare_and_swap */</span>
+<span class="k">struct</span> <span class="n">SpinLock</span> <span class="p">{</span>
+
+    <span class="kt">int</span> <span class="n">flag</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">lock_flag</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">unlock_flag</span><span class="p">;</span>
+
+    <span class="n">SpinLock</span><span class="p">()</span><span class="o">:</span> <span class="n">flag</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">lock_flag</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">unlock_flag</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">lock</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">__sync_bool_compare_and_swap</span><span class="p">(</span><span class="o">&amp;</span><span class="n">flag</span><span class="p">,</span> <span class="n">unlock_flag</span><span class="p">,</span> <span class="n">lock_flag</span><span class="p">));</span>
+
+<span class="cp">#if 0</span><span class="c"></span>
+<span class="c">        /* except for atomicity</span>
+<span class="c">           the following while code block has the same effect </span>
+<span class="c">           as __sync_bool_compare_and_swap */</span>
+<span class="c">        while (true) {</span>
+
+<span class="c">            if (flag == unlock_flag) {</span>
+<span class="c">                flag = lock_flag;</span>
+<span class="c">                break;</span>
+<span class="c">            }</span>
+<span class="c">        }</span>
+<span class="cp">#endif</span>
+
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">unlock</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">flag</span> <span class="o">=</span> <span class="n">unlock_flag</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+
+<p>We can also implement <code>SpinLock</code> using <code>std::atomic&lt;int&gt;</code> class, as shown 
+in the following code:</p>
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;atomic&gt;</span><span class="cp"></span>
+
+<span class="k">struct</span> <span class="n">SpinLock</span> <span class="p">{</span>
+
+    <span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">flag</span><span class="p">;</span>
+
+    <span class="n">SpinLock</span><span class="p">()</span><span class="o">:</span> <span class="n">flag</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">lock</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="kt">int</span> <span class="n">unlock_flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">lock_flag</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">do</span> <span class="p">{</span>
+
+            <span class="n">unlock_flag</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">flag</span><span class="p">.</span><span class="n">compare_exchange_strong</span><span class="p">(</span><span class="n">unlock_flag</span><span class="p">,</span> <span class="n">lock_flag</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">unlock</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+
+<p>Now we can use this <code>SpinLock</code> in our code to do synchronization.</p>
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;pthread.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;sys/syscall.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="n">pthread_mutex_t</span> <span class="n">mutex</span><span class="p">;</span>
+<span class="n">SpinLock</span> <span class="n">spinlock</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="o">*</span> <span class="nf">pfun</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;pid = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">syscall</span><span class="p">(</span><span class="n">SYS_gettid</span><span class="p">));</span>
+
+    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">10000</span><span class="p">;</span> <span class="n">n</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">//pthread_mutex_lock(&amp;mutex);</span>
+        <span class="n">spinlock</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span> <span class="c1">// use our spinlock to replace pthread_mutex</span>
+        <span class="n">a</span><span class="o">++</span><span class="p">;</span>
+        <span class="n">spinlock</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
+        <span class="c1">//pthread_mutex_unlock(&amp;mutex);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+<span class="cp">#define NUM_THREAD 10</span>
+
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;pid = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">getpid</span><span class="p">());</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;pid = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">syscall</span><span class="p">(</span><span class="n">SYS_gettid</span><span class="p">));</span>
+
+    <span class="n">pthread_t</span> <span class="n">p</span><span class="p">[</span><span class="n">NUM_THREAD</span><span class="p">];</span>
+    <span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+
+    <span class="kt">int</span> <span class="n">n</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">NUM_THREAD</span><span class="p">;</span> <span class="n">n</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="n">pthread_create</span><span class="p">(</span><span class="n">p</span><span class="o">+</span><span class="n">n</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">pfun</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">NUM_THREAD</span><span class="p">;</span> <span class="n">n</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="n">pthread_join</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">pthread_mutex_destroy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;a = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2>References</h2>
+<ol>
+<li><a href="http://nullprogram.com/blog/2014/09/02/">C11 Lock-free Stack</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Compare-and-swap">Compare-and-swap</a></li>
+</ol>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://52.193.207.59/blog/">Leon's Blog</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
+                            <li><a href="http://twitter.com">twitter</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+
+        <footer id="contentinfo" class="body">
+           <p>guoxiaoyong@guoxiaoyong.com</p>
+        </footer><!-- /#contentinfo -->
+
+  <div style="margin:auto;display:inline-block;width:400px;text-align:center"><script type="text/javascript" src="//rf.revolvermaps.com/0/0/7.js?i=5d2dt1ex4s6&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;sx=0" async="async"></script></div>
+
+
+</body>
+</html>
