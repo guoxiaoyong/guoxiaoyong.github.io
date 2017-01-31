@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>WiFi Repeater Configuration using OpenWRT</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Xiaoyong's Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/pages/welcome-to-xiaoyong-guos-homepage.html">Home</a></li>
+                    <li><a href="/index.html">Blog</a></li>
+                    <li><a href="/pages/projects.html">Projects</a></li>
+                    <li><a href="/pages/about_xiaoyong_guo.html">About</a></li>
+                </ul>
+                </nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/wifi-repeater-configuration-using-openwrt.html" rel="bookmark"
+           title="Permalink to WiFi Repeater Configuration using OpenWRT">WiFi Repeater Configuration using OpenWRT</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <span>Wed 14 September 2016</span>
+
+</footer><!-- /.post-info -->      <p>I just found an old wireless router NetGear WNDR3700 from a storage box. 
+The router is flashed to an openwrt firmware I compiled for it about 20 months ago. 
+Since <a href="/make-your-laptop-a-wifi-repeater.html">use a laptop as a WiFi repeater</a> is too heavy-handed.
+So I decided to replace my laptop WiFi repeater with this wireless router.</p>
+<p>This steps to configure a wireless router to a WiFi repeater are listed below.</p>
+<p><strong>Step 1</strong>: Make changes to <code>/etc/config/wireless</code>,
+you need an <code>AP</code> mode interface and a <code>station</code> mode interface. 
+Following is my <code>/etc/config/wireless</code> configuration file.</p>
+<div class="highlight"><pre><span></span>config wifi-device  radio0
+        option type     mac80211
+        option channel  11
+        option hwmode   11g
+        option path     &#39;pci0000:00/0000:00:11.0&#39;
+        option htmode   HT20
+
+config wifi-iface
+        option device   radio0
+        option network  lan
+        option mode     ap
+        option ssid       &#39;myssid&#39;
+        option encryption &#39;psk&#39; 
+        option key        &#39;mypassword&#39;
+
+config wifi-iface
+        option device   radio0
+        option network  wlan
+        option mode       sta
+        option ssid       &#39;ssid&#39;
+        option encryption &#39;psk&#39;
+        option key        &#39;password&#39;
+</pre></div>
+
+
+<p><strong>Step 2</strong>: Add one interface configuration in <code>/etc/config/network</code></p>
+<div class="highlight"><pre><span></span>config interface &#39;wlan&#39;
+        option ifname &#39;wlan0&#39;
+        option proto &#39;dhcp&#39;
+</pre></div>
+
+
+<p>This tells openwrt to use DHCP protocol to configure wlan0 interface.
+Note that the interface name <code>wlan</code> should be consistent with the name given in <code>/etc/config/wireless</code>.
+Using <code>iwconfig</code> and <code>ifconfig</code> tools you can see there are two wireless interfaces <code>wlan0</code> and <code>wlan0-1</code>,
+and the <code>Station</code> interface's name is <code>wlan0</code>, so <code>AP</code> interface's name is <code>wlan0-1</code>. </p>
+<p><strong>Step 3</strong>: Remove all firewall rules in <code>/etc/config/firewall</code>.</p>
+<p><strong>Step 4</strong>: Add one line in <code>/etc/rc.local</code></p>
+<div class="highlight"><pre><span></span>iptables -t nat -A POSTROUTING -j MASQUERADE
+</pre></div>
+
+
+<p>This is should be added to <code>/etc/firewall.user</code>. But somehow this does not work.</p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://52.193.207.59/blog/">Leon's Blog</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
+                            <li><a href="http://twitter.com">twitter</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+
+        <footer id="contentinfo" class="body">
+           <p>guoxiaoyong@guoxiaoyong.com</p>
+        </footer><!-- /#contentinfo -->
+
+  <div style="margin:auto;display:inline-block;width:400px;text-align:center"><script type="text/javascript" src="//rf.revolvermaps.com/0/0/7.js?i=5d2dt1ex4s6&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;sx=0" async="async"></script></div>
+
+
+</body>
+</html>

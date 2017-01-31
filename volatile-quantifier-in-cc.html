@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Volatile Quantifier in C/C++</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Xiaoyong's Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/pages/welcome-to-xiaoyong-guos-homepage.html">Home</a></li>
+                    <li><a href="/index.html">Blog</a></li>
+                    <li><a href="/pages/projects.html">Projects</a></li>
+                    <li><a href="/pages/about_xiaoyong_guo.html">About</a></li>
+                </ul>
+                </nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/volatile-quantifier-in-cc.html" rel="bookmark"
+           title="Permalink to Volatile Quantifier in C/C++">Volatile Quantifier in C/C++</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <span>Sat 30 July 2016</span>
+
+</footer><!-- /.post-info -->      <p><strong>volatile</strong> keyword in C and C++ is a quantifer 
+to prevent unwanted optimization.
+In case the compiler determines a variable cannot be
+modified in some scope, then it will cache the value of
+the variable in the register, and use the cached value
+for subsequent uses of the variable. For example: </p>
+<div class="highlight"><pre><span></span><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">b</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">c</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">fun</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Let's compile the code with the optimization switch turned on, </p>
+<div class="highlight"><pre><span></span>gcc -S a.c -O2 -m32 -masm=intel volatile.c
+</pre></div>
+
+
+<p>We get the following assembly code:</p>
+<div class="highlight"><pre><span></span><span class="nl">fun:</span>
+    <span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">a</span>
+    <span class="nf">mov</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">b</span><span class="p">,</span> <span class="nb">eax</span>
+    <span class="nf">mov</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">c</span><span class="p">,</span> <span class="nb">eax</span>
+    <span class="nf">ret</span>
+</pre></div>
+
+
+<p>In the resulting assembly code, the value of <code>a</code> is first
+cached in register <code>eax</code>, then the value is moved from <code>eax</code> to 
+<code>b</code> and <code>c</code> in two consecutive instructions. 
+The compiler assumes that the value of <code>a</code> is not
+changed because it does not see any statement in the scope that
+changes the value of a. 
+So compiler think the two variables <code>b</code> and <code>c</code> 
+always have the same value.</p>
+<p>But this optimization is not always what we want. For example,
+the value of <code>a</code> can be modified by some hardware 
+or another thread, what we want is to store the current value of <code>a</code>
+in <code>b</code> and <code>c</code>.</p>
+<p>If we turn off optimization switch, 
+the resulting assembly code is:</p>
+<div class="highlight"><pre><span></span><span class="nl">fun:</span>
+    <span class="nf">push</span>    <span class="nb">ebp</span>
+    <span class="nf">mov</span> <span class="nb">ebp</span><span class="p">,</span> <span class="nb">esp</span>
+    <span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">a</span>
+    <span class="nf">mov</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">b</span><span class="p">,</span> <span class="nb">eax</span>
+    <span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">a</span>
+    <span class="nf">mov</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">c</span><span class="p">,</span> <span class="nb">eax</span>
+    <span class="nf">nop</span>
+    <span class="nf">pop</span> <span class="nb">ebp</span>
+    <span class="nf">ret</span>
+</pre></div>
+
+
+<p>We can see to assign the value of <code>a</code> to <code>b</code>, 
+the value of <code>a</code> is first fetched and stored in register <code>eax</code>, 
+then moved from <code>eax</code> to <code>b</code>. 
+This process is repeat for the assignment of <code>c</code>,
+the <strong>fetching</strong> step is not omited. </p>
+<p>What if we want the compiler to do optimization for the other
+part of the code, but stop this wrong value caching optimization
+for <code>a</code>? 
+We can simply add a <strong>volatile</strong> quantifier to <code>a</code>. </p>
+<p>Use the command</p>
+<div class="highlight"><pre><span></span>gcc -S a.c -O2 -m32 -masm=intel volatile.c
+</pre></div>
+
+
+<p>to compile the following code:</p>
+<div class="highlight"><pre><span></span><span class="k">volatile</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">b</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">c</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">fun</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>We get this result:</p>
+<div class="highlight"><pre><span></span><span class="nl">fun:</span>
+    <span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">a</span>
+    <span class="nf">mov</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">b</span><span class="p">,</span> <span class="nb">eax</span>
+    <span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">a</span>
+    <span class="nf">mov</span> <span class="kt">DWORD</span> <span class="nv">PTR</span> <span class="nv">c</span><span class="p">,</span> <span class="nb">eax</span>
+    <span class="nf">ret</span>
+</pre></div>
+
+
+<p>This result shows that the compiler did optimization to 
+stack management for the simple function <code>fun</code>,
+but abandoned the value caching optimization
+which we do not want.</p>
+<p>In C++, we can achieve the same effect by declaring variable <code>a</code>
+as an atomic object:</p>
+<div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">a</span><span class="p">;</span>
+</pre></div>
+
+
+<p>C++11 discourages the use of <code>volatile</code> for inter-thread communication.
+Use of atomic object is recommended.</p>
+<blockquote>
+<p>The volatile keyword in C++11 ISO Standard code is to be used only for hardware access; do not use it for inter-thread communication. For inter-thread communication, use mechanisms such as std::atomic<T> from the C++ Standard Template Library.</p>
+</blockquote>
+<p>The following code is an example of using <code>int</code>, <code>volatile int</code>
+and <code>std:atomic&lt;int&gt;</code> to do inter-thread communication. 
+If you compile the code (using the provided Makefile) 
+and run it, you will find
+that it will not do what you expected in <code>MODE 1</code>. </p>
+<p>I knew the keyword <code>volatile</code> for sometime 
+and probably saw it in some other people's code. 
+I thought I know its meaning.
+But I didn't really understand its usefulness until
+one day I experienced a very strange software bug. 
+This bug in its simplest from, is the same as <code>MODE 1</code>
+of the following code.</p>
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;thread&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;atomic&gt;</span><span class="cp"></span>
+
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+<span class="cp">#if  MODE==1</span>
+
+<span class="c1">// no protection against optimization</span>
+<span class="kt">int</span> <span class="nf">quit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="cp">#elif MODE==2</span>
+
+<span class="c1">// not recommended by C++11</span>
+<span class="k">volatile</span> <span class="kt">int</span> <span class="nf">quit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="cp">#else</span>
+
+<span class="c1">// recommended by C++11</span>
+<span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">quit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="cp">#endif</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">quit</span><span class="p">)</span> <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">control</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="kt">char</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">tmp</span><span class="p">;</span>
+    <span class="n">quit</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">loop</span><span class="p">);</span>
+    <span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">control</span><span class="p">);</span>
+    <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+    <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="cp">ifeq ($M,1)</span>
+<span class="nv">mode</span> <span class="o">:=</span> -DMODE<span class="o">=</span>1
+<span class="cp">endif</span>
+
+<span class="cp">ifeq ($M,2)</span>
+<span class="nv">mode</span> <span class="o">:=</span> -DMODE<span class="o">=</span>2
+<span class="cp">endif</span>
+
+<span class="cp">ifeq ($M,3)</span>
+<span class="nv">mode</span> <span class="o">:=</span> -DMODE<span class="o">=</span>3
+<span class="cp">endif</span>
+
+<span class="nv">CXXFLAGS</span> <span class="o">:=</span> -O4 -std<span class="o">=</span>c++11 <span class="k">$(</span>mode<span class="k">)</span>
+<span class="nv">LDLIBS</span> <span class="o">:=</span> -lpthread
+
+<span class="nf">all</span><span class="o">:</span> <span class="n">main</span>
+</pre></div>
+
+
+<h2>References</h2>
+<ol>
+<li><a href="http://www.geeksforgeeks.org/understanding-volatile-qualifier-in-c/">Understanding “volatile” qualifier in C</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Volatile_%28computer_programming%29">volatile (computer programming)</a></li>
+</ol>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://52.193.207.59/blog/">Leon's Blog</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
+                            <li><a href="http://twitter.com">twitter</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+
+        <footer id="contentinfo" class="body">
+           <p>guoxiaoyong@guoxiaoyong.com</p>
+        </footer><!-- /#contentinfo -->
+
+  <div style="margin:auto;display:inline-block;width:400px;text-align:center"><script type="text/javascript" src="//rf.revolvermaps.com/0/0/7.js?i=5d2dt1ex4s6&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;sx=0" async="async"></script></div>
+
+
+</body>
+</html>

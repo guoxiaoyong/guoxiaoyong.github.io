@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Make Your Laptop a WiFi Repeater</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Xiaoyong's Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/pages/welcome-to-xiaoyong-guos-homepage.html">Home</a></li>
+                    <li><a href="/index.html">Blog</a></li>
+                    <li><a href="/pages/projects.html">Projects</a></li>
+                    <li><a href="/pages/about_xiaoyong_guo.html">About</a></li>
+                </ul>
+                </nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/make-your-laptop-a-wifi-repeater.html" rel="bookmark"
+           title="Permalink to Make Your Laptop a WiFi Repeater">Make Your Laptop a WiFi Repeater</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <span>Mon 12 September 2016</span>
+
+</footer><!-- /.post-info -->      <p>I have a wireless cable modem provided by my ISP.
+Although my apartment is rather small,
+I still cannot connect to the network from my bedroom since the signal from the wireless cable modem is very weak.
+So I decided to use my Gateway NE71B laptop as a WiFi repeater to extend the signal coverage.</p>
+<p>My Gateway NE71B laptop is equipped with a Qualcomm Atheros AR9485 WiFi card and has Fedora 22 running on it.
+Following is a list of softwares you need to setup a WiFi repeater.</p>
+<ol>
+<li>iw</li>
+<li>ifconfig </li>
+<li>hostapd</li>
+<li>wpa_supplicant </li>
+<li>wpa_passphrase</li>
+<li>iptables</li>
+</ol>
+<p>Now we can start to configure the laptop to a WiFi repeater.
+First you have to stop NetworkManager service,
+otherwise it will conflict with the configurations you do to the wireless device.</p>
+<div class="highlight"><pre><span></span>service NetworkManager stop
+</pre></div>
+
+
+<p>Second, create two wireless interfaces called <code>sta</code> and <code>ap</code>. 
+<code>sta</code> will run in station mode, and connect to my wireless cable modem,
+and <code>ap</code> will run in AP mode, which acts as a access point.
+Use <code>iw</code> tool to do these configurations as follows:</p>
+<div class="highlight"><pre><span></span>iw dev wlp3s0 del
+iw phy0 interface add dev sta 
+iw phy0 interface add dev ap
+</pre></div>
+
+
+<p>Note that I also delete the wireless device <code>wlp3s0</code>.
+This step is not necessary.
+I did it because I want to name the virtual wireless interface in my own way.
+Like many other Linux distributions, Fedora used to give WiFi device names such as <code>wlan0</code>, <code>wlan1</code>.
+This convention is changed.
+Some of the reason for adopting the naming convention by Fedora 22 can be found 
+<a href="http://unix.stackexchange.com/questions/131224/how-does-fedora-name-wireless-interfaces">here</a></p>
+<p>Since the two network interfaces <code>sta</code> and <code>ap</code> have the same MAC address (the two have the same underlying physical device), 
+you have to change one of them to a difference MAC address.
+For my laptop, the two virtual WiFi interfaces 
+have the same MAC address <code>44:6d:57:b5:dd:0b</code>,
+so I changed one to <code>44:6d:57:b5:dd:0e</code>.</p>
+<p>Next, you need to connect the interface <code>sta</code> to the wireless cable modem using the tool
+<code>wpa_supplicant</code> and <code>wpa_passphrase</code>. Use <code>wpa_passphrase</code> to generate a configuration that
+will be used by <code>wpa_supplicant</code> later. You can also create this file manually.</p>
+<div class="highlight"><pre><span></span>wpa_passphrase ssid password
+</pre></div>
+
+
+<p>which gives</p>
+<div class="highlight"><pre><span></span>network={
+    ssid=&quot;ssid&quot;
+    #psk=&quot;password&quot;
+    psk=44116ea881531996d8a23af58b376d70f196057429c258f529577a26e727ec1b
+}
+</pre></div>
+
+
+<p>Save the output to a file named <code>wpa_supplicant.conf</code>, and run the command</p>
+<div class="highlight"><pre><span></span>wpa_supplicant -B -D nl80211 -i sta -c wpa_supplicant.conf
+</pre></div>
+
+
+<p>Then the interface <code>sta</code> will be connected to the wireless cable modem.
+After the wireless connection is established. We have to setup
+the IP address of <code>sta</code>, the routing table and DNS entry in <code>/etc/resolv.conf</code>.
+Of course we can do it manually. But a much easy way is to use <code>dhclient</code> to 
+obtain the configuration parameters via DHCP protocol and then do all the settings automatically.
+Simply run the command</p>
+<div class="highlight"><pre><span></span>dhclient sta
+</pre></div>
+
+
+<p>After <code>sta</code> is properly set, we need to bring up the <code>ap</code> interface using <code>hostapd</code>.
+configure IP address of ap
+First we have to write a configuration file for hostapd.
+The following is a minimalist configuration file for hostapd.</p>
+<div class="highlight"><pre><span></span>interface=ap
+ssid=myap
+channel=11
+hw_mode=g
+ieee80211n=1
+wpa=3
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+wpa_passphrase=mypasswd
+</pre></div>
+
+
+<p>Save the configuration to a file <code>hostapd.conf</code>, and run the command</p>
+<div class="highlight"><pre><span></span>hostapd -B hostapd.conf
+</pre></div>
+
+
+<p>to bring up the interface <code>ap</code>.
+Then use <code>ifconfig</code> to assign an IP address for <code>ap</code></p>
+<div class="highlight"><pre><span></span>ifconfig ap 192.168.10.1
+</pre></div>
+
+
+<p>Then we have to bring up dnsmasq to provide DHCP service.</p>
+<div class="highlight"><pre><span></span>dhcp-range=192.168.10.100,192.168.10.200,255.255.255.0,12h
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>dnsmasq -C dnsmasq.conf -l /tmp/dhcp.leases
+</pre></div>
+
+
+<p>Now WiFi clients can connect to this WiFi repeater.</p>
+<p>The last step is to setup a NAT. This is quite simple, just run the command</p>
+<div class="highlight"><pre><span></span>iptables -t nat -A POSTROUTING -j MASQUERADE
+</pre></div>
+
+
+<h2>References</h2>
+<p><a href="https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf">hostapd.conf</a></p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://52.193.207.59/blog/">Leon's Blog</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
+                            <li><a href="http://twitter.com">twitter</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+
+        <footer id="contentinfo" class="body">
+           <p>guoxiaoyong@guoxiaoyong.com</p>
+        </footer><!-- /#contentinfo -->
+
+  <div style="margin:auto;display:inline-block;width:400px;text-align:center"><script type="text/javascript" src="//rf.revolvermaps.com/0/0/7.js?i=5d2dt1ex4s6&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;sx=0" async="async"></script></div>
+
+
+</body>
+</html>

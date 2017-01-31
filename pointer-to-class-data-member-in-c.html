@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Pointer to Class Data Member in C++</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+
+        <!--[if IE]>
+            <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Xiaoyong's Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/pages/welcome-to-xiaoyong-guos-homepage.html">Home</a></li>
+                    <li><a href="/index.html">Blog</a></li>
+                    <li><a href="/pages/projects.html">Projects</a></li>
+                    <li><a href="/pages/about_xiaoyong_guo.html">About</a></li>
+                </ul>
+                </nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/pointer-to-class-data-member-in-c.html" rel="bookmark"
+           title="Permalink to Pointer to Class Data Member in C++">Pointer to Class Data Member in C++</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <span>Thu 07 July 2016</span>
+
+</footer><!-- /.post-info -->      <p>Today I was reading this 
+<a href="http://www.boost.org/doc/libs/1_61_0/libs/multi_index/doc/tutorial/basics.html">help pages of boost MultiIndex container</a>
+and encountered some C++ code that looks quite wired to me at the first glance.</p>
+<div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="n">multi_index_container</span><span class="o">&lt;</span>
+  <span class="n">employee</span><span class="p">,</span>
+  <span class="n">indexed_by</span><span class="o">&lt;</span>
+    <span class="n">ordered_unique</span><span class="o">&lt;</span><span class="n">identity</span><span class="o">&lt;</span><span class="n">employee</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">ordered_non_unique</span><span class="o">&lt;</span><span class="n">tag</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span><span class="n">member</span><span class="o">&lt;</span><span class="n">employee</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="o">&amp;</span><span class="n">employee</span><span class="o">::</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&gt;</span>
+  <span class="o">&gt;</span>
+<span class="o">&gt;</span> <span class="n">employee_set</span><span class="p">;</span>
+</pre></div>
+
+
+<p>What is the meaning of <code>&amp;employee::name</code>? 
+With some confusion, I wrote down the following code snippet,
+and compiled it:</p>
+<div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">A</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">typedef</span> <span class="kt">int</span> <span class="n">A</span><span class="o">::*</span><span class="n">PtrToMember</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">PtrToMember</span> <span class="n">p1</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">A</span><span class="o">::</span><span class="n">a</span><span class="p">;</span>
+    <span class="n">PtrToMember</span> <span class="n">p2</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">A</span><span class="o">::</span><span class="n">b</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>It compiles smoothly. Yes this is accepted in C++!</p>
+<p>We can get the address of an instance of a class 
+and the addresses of the public data members of this instance, 
+because it is in memory, it must be stored somewhere, and it must have an address!
+But what does it mean when you write <code>&amp;ClassName::DataMember</code>, 
+there is no such thing exist in memory!</p>
+<p>To understand its real meaning, I compiled the above C++ code into x86 assembly:</p>
+<div class="highlight"><pre><span></span>g++ -S -O0 -m32 dm.cc
+</pre></div>
+
+
+<p>I didn't compile the code into x86_64 assembly, 
+I have a 64-bit Linux system installed actually, 
+but x86_64 has too many registers, 
+and its calling convention seems quite complicated to me.</p>
+<p>I did some cleanup to the generated assembly code, 
+and translated it into <a href="http://www.nasm.us/">nasm</a> syntax, 
+since jekyll's highlight engine does not recognize AT&amp;T syntax.
+I also added comment to each instruction.</p>
+<div class="highlight"><pre><span></span><span class="nl">main:</span>
+    <span class="c1">; save old value of stack base register</span>
+    <span class="nf">push</span> <span class="nb">ebp</span> 
+
+    <span class="c1">; update stack base register </span>
+    <span class="nf">mov</span> <span class="nb">ebp</span><span class="p">,</span> <span class="nb">esp</span>
+
+    <span class="c1">; make room (16 bytes) for variables p1 and p2</span>
+    <span class="c1">; p1 and p2 only takes 8 bytes</span>
+    <span class="c1">; 16 is for alignment requirement</span>
+    <span class="nf">sub</span> <span class="nb">esp</span><span class="p">,</span> <span class="mi">16</span>
+
+    <span class="c1">; p1 = &amp;A::a;</span>
+    <span class="nf">mov</span> <span class="kt">dword</span> <span class="p">[</span><span class="nb">ebp</span><span class="o">-</span><span class="mi">4</span><span class="p">],</span> <span class="mi">0</span> 
+
+    <span class="c1">; p2 = &amp;A::b;</span>
+    <span class="nf">mov</span> <span class="kt">dword</span> <span class="p">[</span><span class="nb">ebp</span><span class="o">-</span><span class="mi">8</span><span class="p">],</span> <span class="mi">4</span>
+
+    <span class="c1">; set value to be returned</span>
+    <span class="nf">mov</span> <span class="nb">eax</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="c1">; recover stack frame of the calling procedure</span>
+    <span class="nf">leave</span>
+
+    <span class="c1">; return</span>
+    <span class="nf">ret</span>
+</pre></div>
+
+
+<p>From the above assembly code, we can clearly see 
+that what actually store in variables <code>p1</code> and <code>p2</code> 
+are <strong>offsets</strong> of the data members of class <code>A</code>.
+So if we have an instance of <code>A</code>, we can use <code>p1</code>
+and <code>p2</code> in the following way:</p>
+<div class="highlight"><pre><span></span><span class="n">A</span> <span class="n">obj</span><span class="p">;</span>
+<span class="n">obj</span><span class="p">.</span><span class="o">*</span><span class="n">p1</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span> <span class="c1">// equivalent to obj.a = 10;</span>
+<span class="n">obj</span><span class="p">.</span><span class="o">*</span><span class="n">p2</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span> <span class="c1">// equivalent to obj.b = 20;</span>
+</pre></div>
+
+
+<p>In C, there is a technique to do the similar thing.
+If you have even read Linux kernel code, 
+you may encounter the macro <code>container_of</code> quite often.
+<code>container_of</code> is used to find the address of a <code>struct</code> 
+if the address of its data member is known.
+<code>container_of</code> is implemented using another 
+<a href="https://en.wikipedia.org/wiki/Offsetof">macro <code>offsetof</code></a>,
+which is defined as:</p>
+<div class="highlight"><pre><span></span><span class="cp">#define offsetof(type, member) ((long) &amp;((type *)0)-&gt;member)</span>
+</pre></div>
+
+
+<p>Once you know the offset of a data member, you can derive the
+address of the data member if you know the address of its container <code>struct</code>,
+or you can derive the address of the container <code>struct</code> if you know the address
+of the data member.</p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>blogroll</h2>
+                        <ul>
+                            <li><a href="http://getpelican.com/">Pelican</a></li>
+                            <li><a href="http://python.org/">Python.org</a></li>
+                            <li><a href="http://52.193.207.59/blog/">Leon's Blog</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
+                            <li><a href="http://twitter.com">twitter</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+
+        <footer id="contentinfo" class="body">
+           <p>guoxiaoyong@guoxiaoyong.com</p>
+        </footer><!-- /#contentinfo -->
+
+  <div style="margin:auto;display:inline-block;width:400px;text-align:center"><script type="text/javascript" src="//rf.revolvermaps.com/0/0/7.js?i=5d2dt1ex4s6&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;sx=0" async="async"></script></div>
+
+
+</body>
+</html>
