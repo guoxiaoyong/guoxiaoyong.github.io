@@ -24,11 +24,114 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/python-programming.html">Python programming</a></h1>
+                    <h1 class="entry-title"><a href="/multiline-string-in-c-and-c.html">Multiline String in C and C++</a></h1>
+<footer class="post-info">
+        <span>Mon 06 February 2017</span>
+
+</footer><!-- /.post-info --><p>Sometimes we want to hardcode a multi-line string directly into the C/C++
+source code. For example, the usage message is often hardcoded into the
+source code. Of course we can use line continuation feature of C/C++ by
+adding a <tt class="docutils literal">\</tt> sign at the end of a line, but in my opinion, it often makes
+the code looks rather messy. From early time on, C considers two or more
+adjacent string literals as one single string, so we can use this feature to make
+the code more readable. The following is an example.</p>
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">poem</span> <span class="o">=</span>
+<span class="s">&quot;The Purple Cow</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="s">&quot;author: Gelett Burgess</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="s">&quot;I never saw a Purple Cow,</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="s">&quot;I never hope to see one,</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="s">&quot;But I can tell you, anyhow,</span><span class="se">\n</span><span class="s">&quot;</span>
+<span class="s">&quot;I&#39;d rather see than be one!&quot;</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">poem</span><span class="p">);</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>One problem with this approach is that we need to put each line in a pair of
+quotation marks <tt class="docutils literal">&quot;</tt>, and we need to escape specially characters such as
+quotation mark <tt class="docutils literal">&quot;</tt> itself. Sometimes, we need to embed a json string
+in the source code of a unittest, then it could turn out to be really annoying,
+you need to write many <tt class="docutils literal">\&quot;</tt> since json's object/dictionary keys are
+always strings. A better way to write multi-line string is to take advantage
+of C/C++ preprocessor's stringification feature and variadic macro feature.
+We can rewrite the above code using this new approach.</p>
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#define MULTILINE_String(...) #__VA_ARGS__</span>
+
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">poem</span> <span class="o">=</span> <span class="n">MULTILINE_String</span><span class="p">(</span>
+<span class="n">The</span> <span class="n">Purple</span> <span class="n">Cow</span><span class="err">\</span><span class="n">n</span>
+<span class="err">\</span><span class="n">n</span>
+<span class="nl">author</span><span class="p">:</span> <span class="n">Gelett</span> <span class="n">Burgess</span><span class="err">\</span><span class="n">n</span>
+<span class="err">\</span><span class="n">n</span>
+<span class="n">I</span> <span class="n">never</span> <span class="n">saw</span> <span class="n">a</span> <span class="n">Purple</span> <span class="n">Cow</span><span class="p">,</span><span class="err">\</span><span class="n">n</span>
+<span class="n">I</span> <span class="n">never</span> <span class="n">hope</span> <span class="n">to</span> <span class="n">see</span> <span class="n">one</span><span class="p">,</span><span class="err">\</span><span class="n">n</span>
+<span class="n">But</span> <span class="n">I</span> <span class="n">can</span> <span class="n">tell</span> <span class="n">you</span><span class="p">,</span> <span class="n">anyhow</span><span class="p">,</span><span class="err">\</span><span class="n">n</span>
+<span class="n">I</span> <span class="n">would</span> <span class="n">rather</span> <span class="n">see</span> <span class="n">than</span> <span class="n">be</span> <span class="n">one</span><span class="o">!</span>
+<span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">poem</span><span class="p">);</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<p>This form is a lot easier to write, we don't need to write quotation marks
+for each line. But we still need to write <tt class="docutils literal">\n</tt> for each line if newline
+character is significant. In some cases, such as json strings, we can safely
+omit <tt class="docutils literal">\n</tt>.  One problem with this approach is that it cannot handle
+the charater <tt class="docutils literal">'</tt>. I didn't find any solution to include <strong>I'd</strong> in the
+string using this method. So I modified <strong>I'd</strong> to <strong>I would</strong> in the poem.</p>
+<p>In C++11, we have an even better way to write multi-line strings.
+C++11 introduced raw string literals. You can simply put unescaped
+string between <tt class="docutils literal">R&quot;(</tt> and <tt class="docutils literal">)&quot;</tt>. You can also add your own delimiter.
+Using this newly introduce feature, we can rewrite the above code as:</p>
+<div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;cstdio&gt;</span><span class="cp"></span>
+
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">poem</span> <span class="o">=</span> <span class="s">R&quot;(</span>
+<span class="s">The Purple Cow</span>
+
+<span class="s">author: Gelett Burgess</span>
+
+<span class="s">I never saw a Purple Cow,</span>
+<span class="s">I never hope to see one,</span>
+<span class="s">But I can tell you, anyhow,</span>
+<span class="s">I&#39;d rather see than be one!</span>
+<span class="s">)&quot;</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">poem</span><span class="p">);</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+<div class="section" id="reference">
+<h2>Reference</h2>
+<ol class="arabic simple">
+<li><a class="reference external" href="http://softwareengineering.stackexchange.com/questions/254984/on-concatenating-adjacent-string-literals">On Concatenating Adjacent String Literals</a></li>
+<li><a class="reference external" href="http://en.cppreference.com/w/cpp/language/string_literal">C++ String Literal</a></li>
+</ol>
+</div>
+                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/python-programming.html" rel="bookmark"
+                           title="Permalink to Python programming">Python programming</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <span>Fri 14 October 2016</span>
 
-</footer><!-- /.post-info --><p>Python is an easy not hard to learn.</p>
+</footer><!-- /.post-info -->                <p>Python is an easy not hard to learn.</p>
 <ul>
 <li>decorator</li>
 <li>with statement</li>
@@ -36,11 +139,10 @@
 <li>return functions closure</li>
 <li>functional</li>
 <li>type itself are object</li>
-</ul>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <ol id="posts-list" class="hfeed">
+</ul>
+                <a class="readmore" href="/python-programming.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
