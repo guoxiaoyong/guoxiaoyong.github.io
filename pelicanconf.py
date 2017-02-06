@@ -40,6 +40,9 @@ DEFAULT_PAGINATION = False
 LOAD_CONTENT_CACHE = False
 DEFAULT_DATE = 'fs'
 STATIC_PATHS = {'images'}
+EXTRA_PATH_METADATA = {
+    'extra/favicon.ico': {'path': 'favicon.ico'}
+}
 
 MENUITEMS = (
    ('Home', '/pages/welcome-to-xiaoyong-guos-homepage.html'),
