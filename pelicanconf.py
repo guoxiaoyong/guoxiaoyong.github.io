@@ -39,7 +39,7 @@ SOCIAL = (('github', 'http://www.github.com/guoxiaoyong'),
 DEFAULT_PAGINATION = False
 LOAD_CONTENT_CACHE = False
 DEFAULT_DATE = 'fs'
-STATIC_PATHS = {'images'}
+STATIC_PATHS = {'images', 'mp3'}
 EXTRA_PATH_METADATA = {
     'extra/favicon.ico': {'path': 'favicon.ico'}
 }
