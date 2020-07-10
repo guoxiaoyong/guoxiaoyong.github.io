@@ -4,6 +4,7 @@
         <meta charset="utf-8" />
         <title>Xiaoyong's Blog</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Xiaoyong's Blog Atom Feed" />
 
         <!--[if IE]>
             <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -92,7 +93,7 @@ string between <tt class="docutils literal">R&quot;(</tt> and <tt class="docutil
 Using this newly introduce feature, we can rewrite the above code as:</p>
 <div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;cstdio&gt;</span><span class="cp"></span>
 
-<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">poem</span> <span class="o">=</span> <span class="s">R&quot;(</span>
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">poem</span> <span class="o">=</span> <span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
 <span class="s">The Purple Cow</span>
 
 <span class="s">author: Gelett Burgess</span>
@@ -101,7 +102,7 @@ Using this newly introduce feature, we can rewrite the above code as:</p>
 <span class="s">I never hope to see one,</span>
 <span class="s">But I can tell you, anyhow,</span>
 <span class="s">I&#39;d rather see than be one!</span>
-<span class="s">)&quot;</span><span class="p">;</span>
+<span class="dl">)</span><span class="s">&quot;</span><span class="p">;</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">poem</span><span class="p">);</span>
@@ -123,29 +124,6 @@ Using this newly introduce feature, we can rewrite the above code as:</p>
 
             <li><article class="hentry">
                 <header>
-                    <h1><a href="/python-programming.html" rel="bookmark"
-                           title="Permalink to Python programming">Python programming</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Fri 14 October 2016</span>
-
-</footer><!-- /.post-info -->                <p>Python is an easy not hard to learn.</p>
-<ul>
-<li>decorator</li>
-<li>with statement</li>
-<li><em>args and </em>*kwargs</li>
-<li>return functions closure</li>
-<li>functional</li>
-<li>type itself are object</li>
-</ul>
-                <a class="readmore" href="/python-programming.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
                     <h1><a href="/revive-my-google-nexus-7-tablet.html" rel="bookmark"
                            title="Permalink to Revive My Google Nexus 7 Tablet">Revive My Google Nexus 7 Tablet</a></h1>
                 </header>
@@ -160,275 +138,6 @@ My Google Nexus 7 was bought in 2012.
 About 2 years ago, the tablet cannot be charged anymore.
 Since then, I haven't been able to use …</p>
                 <a class="readmore" href="/revive-my-google-nexus-7-tablet.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/wifi-repeater-configuration-using-openwrt.html" rel="bookmark"
-                           title="Permalink to WiFi Repeater Configuration using OpenWRT">WiFi Repeater Configuration using OpenWRT</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Wed 14 September 2016</span>
-
-</footer><!-- /.post-info -->                <p>I just found an old wireless router NetGear WNDR3700 from a storage box. 
-The router is flashed to an openwrt firmware I compiled for it about 20 months ago. 
-Since <a href="/make-your-laptop-a-wifi-repeater.html">use a laptop as a WiFi repeater</a> is too heavy-handed.
-So I decided to replace my laptop WiFi repeater with …</p>
-                <a class="readmore" href="/wifi-repeater-configuration-using-openwrt.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/make-your-laptop-a-wifi-repeater.html" rel="bookmark"
-                           title="Permalink to Make Your Laptop a WiFi Repeater">Make Your Laptop a WiFi Repeater</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Mon 12 September 2016</span>
-
-</footer><!-- /.post-info -->                <p>I have a wireless cable modem provided by my ISP.
-Although my apartment is rather small,
-I still cannot connect to the network from my bedroom since the signal from the wireless cable modem is very weak.
-So I decided to use my Gateway NE71B laptop as a WiFi repeater …</p>
-                <a class="readmore" href="/make-your-laptop-a-wifi-repeater.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/makefile-arithmetic.html" rel="bookmark"
-                           title="Permalink to Makefile Arithmetic">Makefile Arithmetic</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Fri 05 August 2016</span>
-
-</footer><!-- /.post-info -->                <p><strong>make</strong> is building tool and a programming language. 
-It has been proved that <strong>make</strong> as a programming language is <a href="https://en.wikipedia.org/wiki/Turing_completeness">turing complete</a>.
-That means, you can write a makefile to do whatever C/java/Python can do, providing that memory is not a concern. </p>
-<p>The following Makefile computes squares, fibonacci numbers …</p>
-                <a class="readmore" href="/makefile-arithmetic.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/ld_preload-environment-variable.html" rel="bookmark"
-                           title="Permalink to LD_PRELOAD Environment Variable">LD_PRELOAD Environment Variable</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Mon 01 August 2016</span>
-
-</footer><!-- /.post-info -->                <p><code>LD_PRELOAD</code> is a environment variable that affects the behavior of dynamic linker/loader. 
-According to the man page of <code>ld.so(8)</code>:</p>
-<blockquote>
-<p><strong>LD_PRELOAD</strong>
-A list of additional, user-specified, ELF shared objects to be loaded before all others.  The items of the list can be separated by spaces or colons.  This …</p></blockquote>
-                <a class="readmore" href="/ld_preload-environment-variable.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/a-few-notes-on-new-and-delete-keywords-in-c.html" rel="bookmark"
-                           title="Permalink to A Few Notes on new and delete Keywords in C++">A Few Notes on new and delete Keywords in C++</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Sun 31 July 2016</span>
-
-</footer><!-- /.post-info -->                <p><strong>new</strong> operator in C++ is used to create a new object in the heap.
-There are two steps in the process of creating 
-a new object using <strong>new</strong> operator: </p>
-<ol>
-<li>allocate memory for the object using the function <strong>operator new</strong>. </li>
-<li>initialize the object properties by invoking the class costructor. </li>
-</ol>
-<p>Note that …</p>
-                <a class="readmore" href="/a-few-notes-on-new-and-delete-keywords-in-c.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/a-few-notes-on-new-and-delete-in-c.html" rel="bookmark"
-                           title="Permalink to A Few Notes on new and delete in C++">A Few Notes on new and delete in C++</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Sat 30 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>C++ provides <strong>new</strong> and <strong>delete</strong> for memory management.</p>
-<h2>References</h2>
-<ol>
-<li><a href="http://stackoverflow.com/questions/222557/what-uses-are-there-for-placement-new">What uses are there for “placement new”?</a></li>
-</ol>
-                <a class="readmore" href="/a-few-notes-on-new-and-delete-in-c.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/volatile-quantifier-in-cc.html" rel="bookmark"
-                           title="Permalink to Volatile Quantifier in C/C++">Volatile Quantifier in C/C++</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Sat 30 July 2016</span>
-
-</footer><!-- /.post-info -->                <p><strong>volatile</strong> keyword in C and C++ is a quantifer 
-to prevent unwanted optimization.
-In case the compiler determines a variable cannot be
-modified in some scope, then it will cache the value of
-the variable in the register, and use the cached value
-for subsequent uses of the variable. For …</p>
-                <a class="readmore" href="/volatile-quantifier-in-cc.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/build-your-own-conditional-variable.html" rel="bookmark"
-                           title="Permalink to Build Your Own Conditional Variable">Build Your Own Conditional Variable</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Thu 28 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>In my blog post <a href="/how-do-locks-work.html">How do locks work</a>,
-I gave examples of building a <strong>spin lock</strong> based on basic <code>CAS</code> atomic operation
-provided by CPU. Another very importance synchronization construct in concurrent programming is
-<a href="https://en.wikipedia.org/wiki/Monitor_%28synchronization%29">conditional variable</a>.
-In the following example, I give an example of 
-a Homebrew conditional variable class …</p>
-                <a class="readmore" href="/build-your-own-conditional-variable.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/find-out-lock-contention-on-linux.html" rel="bookmark"
-                           title="Permalink to Find out Lock Contention on Linux">Find out Lock Contention on Linux</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Wed 27 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>When testing a multi-threaded program, 
-which use <code>lock</code> to protect its critical section,
-you may want to know how often these threads are
-contenting to gain the ownership of the lock.</p>
-<p>A simple method is to use <code>strace</code>, </p>
-<div class="highlight"><pre><span></span><span class="n">strace</span> <span class="o">-</span><span class="n">f</span> <span class="n">program</span>
-</pre></div>
-
-
-<p><code>strace</code> will list all the system calls.
-Note that …</p>
-                <a class="readmore" href="/find-out-lock-contention-on-linux.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/how-do-locks-work.html" rel="bookmark"
-                           title="Permalink to How do Locks Work?">How do Locks Work?</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Tue 26 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>On x86/x86_64 platforms (&gt;= i486), 
-a CPU core can assert a LOCK signal so that only this core 
-can modify the content of a particular memory address.
-There are a few instructions that can be prefixed with <code>lock</code>.
-One such instructions is <code>cmpxchg</code>, which is usually used to implement locks …</p>
-                <a class="readmore" href="/how-do-locks-work.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/value-category-in-c11.html" rel="bookmark"
-                           title="Permalink to Value Category in C++11">Value Category in C++11</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Wed 20 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>In C++11, an expression has a property called <strong>value category</strong>.
-There are 5 value categories defined: </p>
-<ol>
-<li><strong>lvalue</strong>: left value</li>
-<li><strong>xvalue</strong>: expiring value</li>
-<li><strong>rvalue</strong>: right value</li>
-<li><strong>glvalue</strong>: generalized lvalue</li>
-<li><strong>prvalue</strong>: pure rvalue</li>
-</ol>
-<p>The following figure shows the taxonomy of the expression categorization.</p>
-<p><img alt="value category taxonomy" src="/images/value_category.png"></p>
-<p>An expression belongs to one of the three …</p>
-                <a class="readmore" href="/value-category-in-c11.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/lambda-expression-in-c11.html" rel="bookmark"
-                           title="Permalink to Lambda Expression in C++11">Lambda Expression in C++11</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Sun 10 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>C++11 provides native lambda expression support.
-The syntax of creating an anonymous function 
-using lambda expression is summarized in the following figure.</p>
-<p><img alt="C++ lambda" src="/images/cpp_lambda.svg"></p>
-<ol>
-<li>capture flags: <ol>
-<li><code>[&amp;]</code>: capture all external variables by reference </li>
-<li><code>[=]</code>: capture all external variables by value</li>
-<li><code>[]</code>: do not capture any external variable</li>
-<li><code>[a,&amp;b]</code>: capture external variable <code>a</code> by …</li></ol></li></ol>
-                <a class="readmore" href="/lambda-expression-in-c11.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/a-note-on-asian-option-pricing.html" rel="bookmark"
-                           title="Permalink to A Note on Asian Option Pricing">A Note on Asian Option Pricing</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Sat 09 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>Today I did a few google search, and managed to make <a href="https://www.mathjax.org/">MathJax</a> 
-work with <a href="http://jekyllrb.com/">jekyll</a>, 
-the setup process is <a href="http://jekyllrb.com/docs/extras/">very easy</a>.
-This post is about <a href="https://en.wikipedia.org/wiki/Asian_option">Asian option pricing</a>.
-It is also my first experiment with writing LaTeX equations on a webpage using MathJax. </p>
-<p><img alt="asian option time line" src="/images/asian_option_timeline.png"></p>
-<p>Let's say that we already have a …</p>
-                <a class="readmore" href="/a-note-on-asian-option-pricing.html">read more</a>
                 </div><!-- /.entry-content -->
             </article></li>
 
@@ -453,69 +162,6 @@ or member function is something like <tt class="docutils literal">0x400606</tt>.
                 <a class="readmore" href="/an-investigation-on-pointers-to-virtual-functions-in-c.html">read more</a>
                 </div><!-- /.entry-content -->
             </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/pointer-to-class-data-member-in-c.html" rel="bookmark"
-                           title="Permalink to Pointer to Class Data Member in C++">Pointer to Class Data Member in C++</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Thu 07 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>Today I was reading this 
-<a href="http://www.boost.org/doc/libs/1_61_0/libs/multi_index/doc/tutorial/basics.html">help pages of boost MultiIndex container</a>
-and encountered some C++ code that looks quite wired to me at the first glance.</p>
-<div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="n">multi_index_container</span><span class="o">&lt;</span>
-  <span class="n">employee</span><span class="p">,</span>
-  <span class="n">indexed_by</span><span class="o">&lt;</span>
-    <span class="n">ordered_unique</span><span class="o">&lt;</span><span class="n">identity</span><span class="o">&lt;</span><span class="n">employee</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">,</span>
-    <span class="n">ordered_non_unique</span><span class="o">&lt;</span><span class="n">tag</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="p">,</span><span class="n">member</span><span class="o">&lt;</span><span class="n">employee</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="o">&amp;</span><span class="n">employee</span><span class="o">::</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&gt;</span>
-  <span class="o">&gt;</span>
-<span class="o">&gt;</span> <span class="n">employee_set</span><span class="p">;</span>
-</pre></div>
-
-
-<p>What is the meaning of <code>&amp;employee::name …</code></p>
-                <a class="readmore" href="/pointer-to-class-data-member-in-c.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/overload-casting-operator-in-c.html" rel="bookmark"
-                           title="Permalink to Overload Casting Operator in C++">Overload Casting Operator in C++</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Mon 04 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>C++ prohibits overloading functions and class member functions by their return values. Some arguments for this design choice can be found <a href="https://www.quora.com/Why-overloading-by-the-return-value-of-the-function-isnt-possible-in-C++">here</a>. In summary, it is often not possible to deduce the types of the function's return values in the calling context, and thus can not resolve the correct overloaded …</p>
-                <a class="readmore" href="/overload-casting-operator-in-c.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/move-semantics-in-c11-a-metaphoric-explanation.html" rel="bookmark"
-                           title="Permalink to Move Semantics in C++11: A Metaphoric Explanation">Move Semantics in C++11: A Metaphoric Explanation</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Sun 03 July 2016</span>
-
-</footer><!-- /.post-info -->                <p>Move semantics in C++11 is introduced to 
-reduce the overhead caused by object copying. </p>
-<p>The semantics of move and copy in C++11 is very much
-like move and copy operation on files in a filesystem.
-You may already have noticed that: 
-copying a file from one folder to …</p>
-                <a class="readmore" href="/move-semantics-in-c11-a-metaphoric-explanation.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
             </ol><!-- /#posts-list -->
             </section><!-- /#content -->
         <section id="extras" class="body">
@@ -530,6 +176,7 @@ copying a file from one folder to …</p>
                 <div class="social">
                         <h2>social</h2>
                         <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
 
                             <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
                             <li><a href="http://twitter.com">twitter</a></li>

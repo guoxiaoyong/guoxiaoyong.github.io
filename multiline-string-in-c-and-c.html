@@ -4,6 +4,7 @@
         <meta charset="utf-8" />
         <title>Multiline String in C and C++</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Xiaoyong's Blog Atom Feed" />
 
         <!--[if IE]>
             <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -97,7 +98,7 @@ string between <tt class="docutils literal">R&quot;(</tt> and <tt class="docutil
 Using this newly introduce feature, we can rewrite the above code as:</p>
 <div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;cstdio&gt;</span><span class="cp"></span>
 
-<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">poem</span> <span class="o">=</span> <span class="s">R&quot;(</span>
+<span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">poem</span> <span class="o">=</span> <span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
 <span class="s">The Purple Cow</span>
 
 <span class="s">author: Gelett Burgess</span>
@@ -106,7 +107,7 @@ Using this newly introduce feature, we can rewrite the above code as:</p>
 <span class="s">I never hope to see one,</span>
 <span class="s">But I can tell you, anyhow,</span>
 <span class="s">I&#39;d rather see than be one!</span>
-<span class="s">)&quot;</span><span class="p">;</span>
+<span class="dl">)</span><span class="s">&quot;</span><span class="p">;</span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">printf</span><span class="p">(</span><span class="s">&quot;%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">poem</span><span class="p">);</span>
@@ -137,6 +138,7 @@ Using this newly introduce feature, we can rewrite the above code as:</p>
                 <div class="social">
                         <h2>social</h2>
                         <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
 
                             <li><a href="http://www.github.com/guoxiaoyong">github</a></li>
                             <li><a href="http://twitter.com">twitter</a></li>

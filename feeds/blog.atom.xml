@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Xiaoyong's Blog - blog</title><link href="/" rel="alternate"></link><link href="/feeds/blog.atom.xml" rel="self"></link><id>/</id><updated>2017-02-06T00:00:00+08:00</updated><entry><title>Multiline String in C and C++</title><link href="/multiline-string-in-c-and-c.html" rel="alternate"></link><published>2017-02-06T00:00:00+08:00</published><updated>2017-02-06T00:00:00+08:00</updated><author><name>Xiaoyong Guo</name></author><id>tag:None,2017-02-06:/multiline-string-in-c-and-c.html</id><summary type="html">&lt;p&gt;Sometimes we want to hardcode a multi-line string directly into the C/C++
+source code. For example, the usage message is often hardcoded into the
+source code. Of course we can use line continuation feature of C/C++ by
+adding a &lt;tt class="docutils literal"&gt;\&lt;/tt&gt; sign at the end of a line, but in …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Sometimes we want to hardcode a multi-line string directly into the C/C++
+source code. For example, the usage message is often hardcoded into the
+source code. Of course we can use line continuation feature of C/C++ by
+adding a &lt;tt class="docutils literal"&gt;\&lt;/tt&gt; sign at the end of a line, but in my opinion, it often makes
+the code looks rather messy. From early time on, C considers two or more
+adjacent string literals as one single string, so we can use this feature to make
+the code more readable. The following is an example.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;poem&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;The Purple Cow&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;author: Gelett Burgess&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;I never saw a Purple Cow,&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;I never hope to see one,&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;But I can tell you, anyhow,&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="s"&gt;&amp;quot;I&amp;#39;d rather see than be one!&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%s&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;poem&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;One problem with this approach is that we need to put each line in a pair of
+quotation marks &lt;tt class="docutils literal"&gt;&amp;quot;&lt;/tt&gt;, and we need to escape specially characters such as
+quotation mark &lt;tt class="docutils literal"&gt;&amp;quot;&lt;/tt&gt; itself. Sometimes, we need to embed a json string
+in the source code of a unittest, then it could turn out to be really annoying,
+you need to write many &lt;tt class="docutils literal"&gt;\&amp;quot;&lt;/tt&gt; since json's object/dictionary keys are
+always strings. A better way to write multi-line string is to take advantage
+of C/C++ preprocessor's stringification feature and variadic macro feature.
+We can rewrite the above code using this new approach.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;stdio.h&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+
+&lt;span class="cp"&gt;#define MULTILINE_String(...) #__VA_ARGS__&lt;/span&gt;
+
+&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;poem&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MULTILINE_String&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+&lt;span class="n"&gt;The&lt;/span&gt; &lt;span class="n"&gt;Purple&lt;/span&gt; &lt;span class="n"&gt;Cow&lt;/span&gt;&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="nl"&gt;author&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Gelett&lt;/span&gt; &lt;span class="n"&gt;Burgess&lt;/span&gt;&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;never&lt;/span&gt; &lt;span class="n"&gt;saw&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt; &lt;span class="n"&gt;Purple&lt;/span&gt; &lt;span class="n"&gt;Cow&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;never&lt;/span&gt; &lt;span class="n"&gt;hope&lt;/span&gt; &lt;span class="n"&gt;to&lt;/span&gt; &lt;span class="n"&gt;see&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="n"&gt;But&lt;/span&gt; &lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;can&lt;/span&gt; &lt;span class="n"&gt;tell&lt;/span&gt; &lt;span class="n"&gt;you&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;anyhow&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;\&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;
+&lt;span class="n"&gt;I&lt;/span&gt; &lt;span class="n"&gt;would&lt;/span&gt; &lt;span class="n"&gt;rather&lt;/span&gt; &lt;span class="n"&gt;see&lt;/span&gt; &lt;span class="n"&gt;than&lt;/span&gt; &lt;span class="n"&gt;be&lt;/span&gt; &lt;span class="n"&gt;one&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;
+&lt;span class="p"&gt;);&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%s&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;poem&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;This form is a lot easier to write, we don't need to write quotation marks
+for each line. But we still need to write &lt;tt class="docutils literal"&gt;\n&lt;/tt&gt; for each line if newline
+character is significant. In some cases, such as json strings, we can safely
+omit &lt;tt class="docutils literal"&gt;\n&lt;/tt&gt;.  One problem with this approach is that it cannot handle
+the charater &lt;tt class="docutils literal"&gt;'&lt;/tt&gt;. I didn't find any solution to include &lt;strong&gt;I'd&lt;/strong&gt; in the
+string using this method. So I modified &lt;strong&gt;I'd&lt;/strong&gt; to &lt;strong&gt;I would&lt;/strong&gt; in the poem.&lt;/p&gt;
+&lt;p&gt;In C++11, we have an even better way to write multi-line strings.
+C++11 introduced raw string literals. You can simply put unescaped
+string between &lt;tt class="docutils literal"&gt;R&amp;quot;(&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;)&amp;quot;&lt;/tt&gt;. You can also add your own delimiter.
+Using this newly introduce feature, we can rewrite the above code as:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="cp"&gt;#include&lt;/span&gt; &lt;span class="cpf"&gt;&amp;lt;cstdio&amp;gt;&lt;/span&gt;&lt;span class="cp"&gt;&lt;/span&gt;
+
+&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="kt"&gt;char&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;poem&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sa"&gt;R&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="dl"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&lt;/span&gt;
+&lt;span class="s"&gt;The Purple Cow&lt;/span&gt;
+
+&lt;span class="s"&gt;author: Gelett Burgess&lt;/span&gt;
+
+&lt;span class="s"&gt;I never saw a Purple Cow,&lt;/span&gt;
+&lt;span class="s"&gt;I never hope to see one,&lt;/span&gt;
+&lt;span class="s"&gt;But I can tell you, anyhow,&lt;/span&gt;
+&lt;span class="s"&gt;I&amp;#39;d rather see than be one!&lt;/span&gt;
+&lt;span class="dl"&gt;)&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+  &lt;span class="n"&gt;printf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%s&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;poem&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+  &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;div class="section" id="reference"&gt;
+&lt;h2&gt;Reference&lt;/h2&gt;
+&lt;ol class="arabic simple"&gt;
+&lt;li&gt;&lt;a class="reference external" href="http://softwareengineering.stackexchange.com/questions/254984/on-concatenating-adjacent-string-literals"&gt;On Concatenating Adjacent String Literals&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference external" href="http://en.cppreference.com/w/cpp/language/string_literal"&gt;C++ String Literal&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+</content><category term="blog"></category></entry><entry><title>Revive My Google Nexus 7 Tablet</title><link href="/revive-my-google-nexus-7-tablet.html" rel="alternate"></link><published>2016-09-18T12:20:41+08:00</published><updated>2016-09-18T12:20:41+08:00</updated><author><name>Xiaoyong Guo</name></author><id>tag:None,2016-09-18:/revive-my-google-nexus-7-tablet.html</id><summary type="html">&lt;p&gt;Today I happened to find my Nexus 7 in my storage box,
+and it is lying there for 2 years since it is bricked.
+My Google Nexus 7 was bought in 2012.
+About 2 years ago, the tablet cannot be charged anymore.
+Since then, I haven't been able to use …&lt;/p&gt;</summary><content type="html">&lt;p&gt;Today I happened to find my Nexus 7 in my storage box,
+and it is lying there for 2 years since it is bricked.
+My Google Nexus 7 was bought in 2012.
+About 2 years ago, the tablet cannot be charged anymore.
+Since then, I haven't been able to use it.
+Today I decided to revive it.&lt;/p&gt;
+&lt;p&gt;The problem with my Nexus 7 is not like that
+is described &lt;a class="reference external" href="http://www.droid-life.com/2012/12/27/fix-nexus-7-refusing-to-charge-try-this-trick/"&gt;here&lt;/a&gt;, and it cannot be fixed using solutions provided by &lt;a class="reference external" href="https://support.google.com/nexus/troubleshooter/3337561?hl=en"&gt;Nexus support page&lt;/a&gt;. The symptoms of my tablet is that even though its power meter is well above 20%, and it is charged using the original power adaptor, and the small icon on the upright of the tablet screen indicates the battery is charging, the power meter continues to drop, until the battery runs out of all power. Then the tablet is bricked.&lt;/p&gt;
+&lt;p&gt;I guess the problem might be caused by some circuits or chips that controls the battery charging.
+Probably I can revive my tablet by charging the battery directly.
+So I opened the back cover of the tablet, and found the battery.&lt;/p&gt;
+&lt;div class="figure align-center"&gt;
+&lt;img alt="open back cover" src="/images/nexus7/01.jpg" style="width: 500px;" /&gt;
+&lt;/div&gt;
+&lt;p&gt;The battery is connected to the main board using the connector shown in the following picture.  The red line on the connector is connected to the positive pole, and the black line is connected to the negtive pole.&lt;/p&gt;
+&lt;div class="figure align-center"&gt;
+&lt;img alt="battery connector connects to the main board" src="/images/nexus7/02.jpg" style="width: 500px;" /&gt;
+&lt;/div&gt;
+&lt;p&gt;You can diconnect the battery from the main board like this.&lt;/p&gt;
+&lt;div class="figure align-center"&gt;
+&lt;img alt="battery connector is diconnected from the main board" src="/images/nexus7/03.jpg" style="width: 500px;" /&gt;
+&lt;/div&gt;
+&lt;p&gt;I made a charging cable that looks like this,&lt;/p&gt;
+&lt;div class="figure align-center"&gt;
+&lt;img alt="charging cable" src="/images/nexus7/04.jpg" style="width: 500px;" /&gt;
+&lt;/div&gt;
+&lt;p&gt;The following picture shows how I use the cable I made to charge the battery directly.&lt;/p&gt;
+&lt;div class="figure align-center"&gt;
+&lt;img alt="charging battery" src="/images/nexus7/05.jpg" style="width: 500px;" /&gt;
+&lt;/div&gt;
+&lt;p&gt;After 2 hours of charging, I removed the charging cable, and connect the battery to the main board, put on the back cover,
+then pressed the power-on button for a few seconds, then the tablet turned on.&lt;/p&gt;
+&lt;div class="figure align-center"&gt;
+&lt;img alt="tablet turned on" src="/images/nexus7/06.jpg" style="width: 500px;" /&gt;
+&lt;/div&gt;
+&lt;p&gt;The problem with my method is that each time I charge the tablet, I need to open the back cover. This can be troublesome. If anyone knows how to fix the tablet, please kindly let me know by drop me an email, my email address is guoxiaoyong AT guoxiaoyong dot com. Thanks in advance.&lt;/p&gt;
+</content><category term="blog"></category></entry><entry><title>An Investigation on Pointers to Virtual Functions in C++</title><link href="/an-investigation-on-pointers-to-virtual-functions-in-c.html" rel="alternate"></link><published>2016-07-08T17:26:00+08:00</published><updated>2016-07-08T17:26:00+08:00</updated><author><name>Xiaoyong Guo</name></author><id>tag:None,2016-07-08:/an-investigation-on-pointers-to-virtual-functions-in-c.html</id><summary type="html">&lt;p&gt;I have noticed that if you print out
+the value of a pointer to a virtual function
+of a class using &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;printf(&amp;quot;%p\n&amp;quot;,&lt;/span&gt; ptr)&lt;/tt&gt;,
+the result is a &lt;tt class="docutils literal"&gt;1&lt;/tt&gt;.
+In contrast,
+the value of a pointer to a regular function
+or member function is something like &lt;tt class="docutils literal"&gt;0x400606&lt;/tt&gt;.&lt;/p&gt;
+&lt;p&gt;In order …&lt;/p&gt;</summary><content type="html">&lt;p&gt;I have noticed that if you print out
+the value of a pointer to a virtual function
+of a class using &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;printf(&amp;quot;%p\n&amp;quot;,&lt;/span&gt; ptr)&lt;/tt&gt;,
+the result is a &lt;tt class="docutils literal"&gt;1&lt;/tt&gt;.
+In contrast,
+the value of a pointer to a regular function
+or member function is something like &lt;tt class="docutils literal"&gt;0x400606&lt;/tt&gt;.&lt;/p&gt;
+&lt;p&gt;In order to develop a better understanding of this phenomenon,
+I designed a very simple class &lt;tt class="docutils literal"&gt;A&lt;/tt&gt; as follows:&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="k"&gt;virtual&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;virtual&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;virtual&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;};&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;10&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;p&gt;In the following &lt;tt class="docutils literal"&gt;main&lt;/tt&gt; function,
+the addresses of virtual functions of class &lt;tt class="docutils literal"&gt;A&lt;/tt&gt;
+are assigned to variables
+&lt;tt class="docutils literal"&gt;p1&lt;/tt&gt;, &lt;tt class="docutils literal"&gt;p2&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt;.
+Then an instance &lt;tt class="docutils literal"&gt;a&lt;/tt&gt; of class &lt;tt class="docutils literal"&gt;A&lt;/tt&gt; is constructed,
+a pointer &lt;tt class="docutils literal"&gt;b&lt;/tt&gt; points to the variable &lt;tt class="docutils literal"&gt;a&lt;/tt&gt; is defined.
+After that, I use three different forms
+to call virtual functions.&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt; 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::*&lt;/span&gt;&lt;span class="n"&gt;p1&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::*&lt;/span&gt;&lt;span class="n"&gt;p2&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::*&lt;/span&gt;&lt;span class="n"&gt;p3&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+    &lt;span class="n"&gt;p1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;p2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;p3&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;A&lt;/span&gt; &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;A&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;22&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;23&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;a&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;p3&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="mi"&gt;24&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;p&gt;Then I type the following command to compile the C++ code
+into x86 assembly code
+(I just learned how to make g++
+generate assembly code with intel syntax):&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;$ g++ -S -m32 -O0 -masm&lt;span class="o"&gt;=&lt;/span&gt;intel test.cc
+&lt;span class="c1"&gt;# remove some irrelavant directives and demangle C++ symbols.&lt;/span&gt;
+cat test.s &lt;span class="p"&gt;|&lt;/span&gt; grep -v cfi &lt;span class="p"&gt;|&lt;/span&gt; grep -v .LF &lt;span class="p"&gt;|&lt;/span&gt; c++filt &amp;gt; result.s
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The following is
+the resulting x86 assembly code
+(different versions of g++ seems to generate
+somewhat different assembly code, my g++ version is v5.3.1):&lt;/p&gt;
+&lt;table class="highlighttable"&gt;&lt;tr&gt;&lt;td class="linenos"&gt;&lt;div class="linenodiv"&gt;&lt;pre&gt;  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nf"&gt;.file&lt;/span&gt;   &lt;span class="s"&gt;&amp;quot;test.cc&amp;quot;&lt;/span&gt;
+    &lt;span class="nf"&gt;.intel_syntax&lt;/span&gt; &lt;span class="nv"&gt;noprefix&lt;/span&gt;
+    &lt;span class="nf"&gt;.text&lt;/span&gt;
+    &lt;span class="nf"&gt;.align&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+    &lt;span class="nf"&gt;.globl&lt;/span&gt;  &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;function&lt;/span&gt;
+&lt;span class="nl"&gt;A:&lt;/span&gt;&lt;span class="err"&gt;:&lt;/span&gt;&lt;span class="nf"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;ret&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;.&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.align&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+    &lt;span class="nf"&gt;.globl&lt;/span&gt;  &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;function&lt;/span&gt;
+&lt;span class="nl"&gt;A:&lt;/span&gt;&lt;span class="err"&gt;:&lt;/span&gt;&lt;span class="nf"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;10&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;ret&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;.&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.align&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+    &lt;span class="nf"&gt;.globl&lt;/span&gt;  &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;function&lt;/span&gt;
+&lt;span class="nl"&gt;A:&lt;/span&gt;&lt;span class="err"&gt;:&lt;/span&gt;&lt;span class="nf"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;100&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;ret&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nv"&gt;.&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.section&lt;/span&gt;    &lt;span class="nv"&gt;.text._ZN1AC2Ev&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;axG&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;progbits&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;&lt;span class="nv"&gt;comdat&lt;/span&gt;
+    &lt;span class="nf"&gt;.align&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+    &lt;span class="nf"&gt;.weak&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;function&lt;/span&gt;
+&lt;span class="nl"&gt;A:&lt;/span&gt;&lt;span class="err"&gt;:&lt;/span&gt;&lt;span class="nf"&gt;A&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;OFFSET&lt;/span&gt; &lt;span class="nv"&gt;FLAT&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="nv"&gt;vtable&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;
+    &lt;span class="nf"&gt;nop&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;ret&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt; &lt;span class="nv"&gt;.&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="nf"&gt;.weak&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="nf"&gt;.set&lt;/span&gt;    &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="nf"&gt;.text&lt;/span&gt;
+    &lt;span class="nf"&gt;.globl&lt;/span&gt;  &lt;span class="nv"&gt;main&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;main&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;function&lt;/span&gt;
+&lt;span class="nl"&gt;main:&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;ecx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;and&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ecx&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;edi&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;esi&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;ebx&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;ecx&lt;/span&gt;
+    &lt;span class="nf"&gt;sub&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;40&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;esi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;edi&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;36&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;esi&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;32&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;edi&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ecx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;5&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ebx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;44&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;ecx&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;40&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;ebx&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;9&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;52&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;48&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;
+    &lt;span class="nf"&gt;sub&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;12&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;call&lt;/span&gt;    &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;28&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;sub&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="mi"&gt;22&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;call&lt;/span&gt;    &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;28&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;sub&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="mi"&gt;23&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;28&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;call&lt;/span&gt;    &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;52&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;and&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="nf"&gt;test&lt;/span&gt;    &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;jne&lt;/span&gt; &lt;span class="nv"&gt;.L9&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;52&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;jmp&lt;/span&gt; &lt;span class="nv"&gt;.L10&lt;/span&gt;
+&lt;span class="nl"&gt;.L9:&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;48&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;52&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;sub&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="nl"&gt;.L10:&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;DWORD&lt;/span&gt; &lt;span class="nv"&gt;PTR&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;48&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;ecx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;56&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;edx&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;ecx&lt;/span&gt;
+    &lt;span class="nf"&gt;sub&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="mi"&gt;24&lt;/span&gt;
+    &lt;span class="nf"&gt;push&lt;/span&gt;    &lt;span class="nb"&gt;edx&lt;/span&gt;
+    &lt;span class="nf"&gt;call&lt;/span&gt;    &lt;span class="nb"&gt;eax&lt;/span&gt;
+    &lt;span class="nf"&gt;add&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;
+    &lt;span class="nf"&gt;mov&lt;/span&gt; &lt;span class="nb"&gt;eax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ebp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;16&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;ecx&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;ebx&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;esi&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;edi&lt;/span&gt;
+    &lt;span class="nf"&gt;pop&lt;/span&gt; &lt;span class="nb"&gt;ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;lea&lt;/span&gt; &lt;span class="nb"&gt;esp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nb"&gt;ecx&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+    &lt;span class="nf"&gt;ret&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;main&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;.&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;main&lt;/span&gt;
+    &lt;span class="nf"&gt;.weak&lt;/span&gt;   &lt;span class="nv"&gt;vtable&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;
+    &lt;span class="nf"&gt;.section&lt;/span&gt;    &lt;span class="nv"&gt;.rodata._ZTV1A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;aG&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;progbits&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;vtable&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;comdat&lt;/span&gt;
+    &lt;span class="nf"&gt;.align&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;vtable&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;object&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;vtable&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt;
+&lt;span class="nf"&gt;vtable&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nf"&gt;.long&lt;/span&gt;   &lt;span class="mi"&gt;0&lt;/span&gt;
+    &lt;span class="nf"&gt;.long&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;
+    &lt;span class="nf"&gt;.long&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;fun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.long&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;gun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.long&lt;/span&gt;   &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;hun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;.weak&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;
+    &lt;span class="nf"&gt;.section&lt;/span&gt;    &lt;span class="nv"&gt;.rodata._ZTI1A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;aG&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;progbits&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;comdat&lt;/span&gt;
+    &lt;span class="nf"&gt;.align&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;object&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;
+&lt;span class="nf"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nf"&gt;.long&lt;/span&gt;   &lt;span class="nv"&gt;vtable&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;__cxxabiv1&lt;/span&gt;&lt;span class="p"&gt;::&lt;/span&gt;&lt;span class="nv"&gt;__class_type_info&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;
+    &lt;span class="nf"&gt;.long&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;
+    &lt;span class="nf"&gt;.weak&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;
+    &lt;span class="nf"&gt;.section&lt;/span&gt;    &lt;span class="nv"&gt;.rodata._ZTS1A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;aG&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;progbits&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;comdat&lt;/span&gt;
+    &lt;span class="nf"&gt;.type&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;object&lt;/span&gt;
+    &lt;span class="nf"&gt;.size&lt;/span&gt;   &lt;span class="nv"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;
+&lt;span class="nf"&gt;typeinfo&lt;/span&gt; &lt;span class="nv"&gt;name&lt;/span&gt; &lt;span class="nv"&gt;for&lt;/span&gt; &lt;span class="nv"&gt;A&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="nf"&gt;.string&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;1A&amp;quot;&lt;/span&gt;
+    &lt;span class="nf"&gt;.ident&lt;/span&gt;  &lt;span class="s"&gt;&amp;quot;GCC: (GNU) 5.3.1 20160406 (Red Hat 5.3.1-6)&amp;quot;&lt;/span&gt;
+    &lt;span class="nf"&gt;.section&lt;/span&gt;    &lt;span class="nv"&gt;.note.GNU&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="nv"&gt;stack&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="err"&gt;@&lt;/span&gt;&lt;span class="nv"&gt;progbits&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;p&gt;Keep in mind that &lt;tt class="docutils literal"&gt;long&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;pointer type&lt;/tt&gt;
+are 32-bit long since I choose to
+generate 32-bit assembly code.&lt;/p&gt;
+&lt;p&gt;From line 67 to line 78,
+we can see that &lt;tt class="docutils literal"&gt;p1 = 1&lt;/tt&gt;, &lt;tt class="docutils literal"&gt;p2 = 5&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;p3 = 9&lt;/tt&gt;.
+If I choose to generate 64-bit assembly code, you'll see
+that these three values are &lt;tt class="docutils literal"&gt;1&lt;/tt&gt;, &lt;tt class="docutils literal"&gt;9&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;17&lt;/tt&gt;.
+So, it seems that the values stored in the
+pointers to virtual functions are
+&lt;strong&gt;offsets of virutual functions in the vtable plus 1&lt;/strong&gt;.
+&lt;tt class="docutils literal"&gt;vtable for A&lt;/tt&gt; is defined in line 142,
+where the first 8 bytes seems to be ignored when assigning
+vtable address in the constructor of &lt;tt class="docutils literal"&gt;A&lt;/tt&gt; in line 44.&lt;/p&gt;
+&lt;p&gt;Line 87-90 corresponds to the C++ code &lt;tt class="docutils literal"&gt;a.fun(22)&lt;/tt&gt;.
+In line 90 the function address of &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;A::fun(int)&lt;/span&gt;&lt;/tt&gt; is called directly,
+So we can conclude that there is no overhead incurred by
+calling a virtual function using the form &lt;tt class="docutils literal"&gt;Object.Function&lt;/tt&gt;.&lt;/p&gt;
+&lt;p&gt;Line 92-99 corresponds to the C++ code &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;b-&amp;gt;gun(23)&lt;/span&gt;&lt;/tt&gt;.  Line 92-95
+are the steps to get the address of the virtual
+function to be called from vtable.
+So call virtual function via a pointer to class &lt;tt class="docutils literal"&gt;A&lt;/tt&gt;
+incurs some overhead,
+4 additional instructions are needed to resolve
+the address of the virtual function to be called.&lt;/p&gt;
+&lt;p&gt;Line 101-125 corresponds to the C++ code &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;a::*p3(24)&lt;/span&gt;&lt;/tt&gt;.
+We can see that this form of virtual function calling
+is very expensive.
+First you need to determine wether &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt; is a pointer
+to a virtual function or a regular member function.
+This is done by checking whether the value of &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt; is an odd number
+or an even numer (line 102-103).
+If the value is odd, then it is assumed
+that &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt; is a virtual function pointer
+(this is the reason for adding 1 to the offset).
+To call the virtual function, you have to find the address of
+the function by looking up the vtable (line 108-116).
+Note that in line 114, the value of &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt; is substracted by 1
+to get the offset.
+If value in &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt; is an even number,
+then it is assumed that &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt; is
+a regular member function pointer. The value of &lt;tt class="docutils literal"&gt;p3&lt;/tt&gt; is
+used as the function address to be called
+(line 105 and line 125).&lt;/p&gt;
+&lt;p&gt;## Performance Test Results&lt;/p&gt;
+&lt;p&gt;I did a simple performance benchmark.
+The three function calls &lt;tt class="docutils literal"&gt;a.fun(22)&lt;/tt&gt;, &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;b-&amp;gt;fun(22)&lt;/span&gt;&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;a::*p1(22)&lt;/span&gt;&lt;/tt&gt;
+are iterated for &lt;tt class="docutils literal"&gt;1e10&lt;/tt&gt; times.
+The results are shown in the following table.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;colgroup&gt;
+&lt;col width="48%" /&gt;
+&lt;col width="52%" /&gt;
+&lt;/colgroup&gt;
+&lt;thead valign="bottom"&gt;
+&lt;tr&gt;&lt;th class="head"&gt;Function Call&lt;/th&gt;
+&lt;th class="head"&gt;Time (seconds)&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;&lt;cite&gt;a.fun(22)&lt;/cite&gt;&lt;/td&gt;
+&lt;td&gt;84.475&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;cite&gt;b-&amp;gt;fun(22)&lt;/cite&gt;&lt;/td&gt;
+&lt;td&gt;92.959&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;cite&gt;a::*p1(22)&lt;/cite&gt;&lt;/td&gt;
+&lt;td&gt;141.373&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/blockquote&gt;
+&lt;div class="section" id="conclusions"&gt;
+&lt;h2&gt;Conclusions&lt;/h2&gt;
+&lt;ol class="arabic simple"&gt;
+&lt;li&gt;Pointer to a virtual function stores a value that equals to the offset of the virtual function in vtable plus 1.&lt;/li&gt;
+&lt;li&gt;The calling form &lt;tt class="docutils literal"&gt;Object.Function&lt;/tt&gt; incurs no overhead compared to calling a non-virtual function.&lt;/li&gt;
+&lt;li&gt;The calling form &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;PtrToObject-&amp;gt;Function&lt;/span&gt;&lt;/tt&gt; incurs a relatively small overhead.&lt;/li&gt;
+&lt;li&gt;The calling form &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;Object.*PtrToFunction&lt;/span&gt;&lt;/tt&gt; incurs a relatively big overhead.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Remember that &lt;strong&gt;item 3&lt;/strong&gt; and &lt;strong&gt;item 4&lt;/strong&gt; are based on the assumption that the g++ optimization switch is off.
+C++ compiler is able to optimize the generated assembly code to reduce this function calling overhead in many cases.&lt;/p&gt;
+&lt;/div&gt;
+</content><category term="blog"></category></entry></feed>
